@@ -1,0 +1,90 @@
+% Propiedades del documento
+\documentclass[12pt]{report}
+
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[section]{placeins}
+\usepackage{titlesec}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{subfig}
+
+\usepackage{hyperref}
+
+% Estilo de los enlaces
+\hypersetup{
+    colorlinks=true, % make the links colored
+    linkcolor=black, % color TOC links in blue
+    urlcolor=blue, % color URLs in red
+    linktoc=all % 'all' will create links for everything in the TOC
+}
+
+\setlength{\headheight}{15pt}
+
+% Quitar texto "Capítulo N"
+\titleformat{\chapter}[hang]{\Huge\bfseries}{\thechapter{. }}{0pt}{\Huge\bfseries}
+
+% Encabezado y pie de página
+\fancyhead{}
+\fancyhead[R]{Robot con pasillos estrechos}
+\fancyfoot{}
+\fancyfoot[R]{\thepage}
+\fancyfoot[L]{Costel Adi Huzum \\ Andriy Byelikov}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Color de los títulos
+\titleformat{\chapter}{\color{red}\large}{}{0em}{\MakeUppercase}[\titlerule]
+
+% Imágenes
+\graphicspath{ {images/} }
+
+\begin{document}
+
+% Portada
+\begin{titlepage}
+    \begin{center}
+ 
+        %\vfill
+ 
+        %\vspace{0.8cm}
+ 
+        \includegraphics[width=0.4\textwidth]{logo}
+        
+        \vspace*{1cm}
+ 
+        \vspace{0.5cm}
+ 
+        \vspace{1.5cm}
+        
+        \Huge
+        \textbf{Robot con pasillos estrechos}
+        
+        \vfill
+ 
+        \Large
+        
+        \textbf{Sistemas Inteligentes}\\
+        
+        \vspace{1.5cm}
+        
+        Costel Adi Huzum\\
+        Andriy Byelikov\\
+
+    \end{center}
+\end{titlepage}
+
+ % Índice
+\tableofcontents
+
+% Capítulos
+\chapter{Enunciado}
+\input{partes/enunciado}
+
+\chapter{Características del agente}
+\input{partes/agente}
+
+\end{document}
