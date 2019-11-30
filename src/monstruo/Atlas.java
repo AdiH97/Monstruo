@@ -1,4 +1,4 @@
-package robot;
+package monstruo;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;

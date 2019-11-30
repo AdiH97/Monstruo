@@ -1,4 +1,4 @@
-package robot;
+package monstruo;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -32,9 +32,9 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 
-public class Robot {
+public class Monstruo {
 
-	private static final String TITLE = "Robot",
+	private static final String TITLE = "Monstruo",
 			STOP = "Parar robot",
 			START = "Iniciar robot",
 			VIEW_PERC = "Ver percepciones",
@@ -97,7 +97,7 @@ public class Robot {
 						if (e.getButton() == 1) // Izquierdo
 						// Cambiar celda
 						{
-							if (canAddPared) {
+							/*if (canAddPared) {
 								jpEntorno.cambiarAPared(casillaX, casillaY);
 							} else if (canRemovePared) {
 								jpEntorno.cambiarASuelo(casillaX, casillaY);
@@ -110,7 +110,7 @@ public class Robot {
 								if (agente_idx != -1) {
 									jpEntorno.removeAgente(agente_idx);
 								}
-							}
+							}*/
 						}
 					}
 				}
@@ -279,15 +279,6 @@ public class Robot {
 				canAddAgente = false;
 				canRemoveAgente = true;
 			});
-			
-			// Ver/Ocultar percepciones
-			jbPercep.addActionListener((ActionEvent ae) -> {
-				viewPercep = !viewPercep;
-				
-				for(Agente agente : jpEntorno.agentes()) {
-					agente.setShowPerceptions(viewPercep);
-				}
-			});
 
 			// Bordes del panel de Debug
 			EmptyBorder ebPadding = new EmptyBorder(PADDING, PADDING, PADDING, PADDING);
@@ -449,13 +440,6 @@ public class Robot {
 				if (isMoving) {
 					jpEntorno.ciclo();
 				}
-				if (jpEntorno.agentes().size() >= 1 && jpEntorno.agentes().get(0) != null) {
-					// Actualizar campos de debug
-					jtfAccion.setText(jpEntorno.agentes().get(0).getTxtAccion());
-					jtfAccionp.setText(jpEntorno.agentes().get(0).getTxtAccionp());
-					jtfW.setText(jpEntorno.agentes().get(0).getTxtW());
-					jtfWp.setText(jpEntorno.agentes().get(0).getTxtWp());
-				}
 
 				// PINTADO //
 				jfVentana.getContentPane().revalidate();
@@ -468,7 +452,7 @@ public class Robot {
 				time = System.nanoTime() / 1000000;
 			}
 		} catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-			Logger.getLogger(Robot.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(Monstruo.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 }
