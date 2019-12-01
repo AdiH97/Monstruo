@@ -426,6 +426,7 @@ public class Monstruo {
 
 			jfVentana.pack();
 			jfVentana.setLocationRelativeTo(null);
+			jfVentana.setAlwaysOnTop(true);
 			jfVentana.setVisible(true);
 
 			// BUCLE PRINCIPAL //

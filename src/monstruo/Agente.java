@@ -15,6 +15,7 @@ public class Agente implements Ciclico {
 	private final int filas, columnas;
 
 	private final boolean[][] mapa;
+	private boolean w[];
 
 	protected enum Movimiento {
 		NORTE, ESTE, SUD, OESTE
@@ -31,10 +32,30 @@ public class Agente implements Ciclico {
 		this.filas = filas;
 		this.columnas = columnas;
 		mapa = new boolean[filas * columnas][];
-		accion = Movimiento.NORTE;
+		w = new boolean[6];
+		accion = accionp = Movimiento.NORTE;
 	}
 
-	public void calcularAccion() {
+	public void calcularAccion() {		
+		if (w[Percepciones.GOLPE.ordinal()]) {
+			switch (accionp) {
+				case NORTE:
+					accion = Movimiento.ESTE;
+					break;
+				case ESTE:
+					accion = Movimiento.SUD;
+					break;
+				case SUD:
+					accion = Movimiento.OESTE;
+					break;
+				case OESTE:
+					accion = Movimiento.NORTE;
+					break;
+			}
+		} else {
+			accion = Movimiento.NORTE;
+		}
+		accionp = accion;
 	}
 
 	@Override
@@ -98,13 +119,11 @@ public class Agente implements Ciclico {
 	}
 
 	public void setW(boolean[] w) {
-		int posAgente = getY() * columnas + getX();
-		mapa[posAgente] = new boolean[w.length];
-		System.arraycopy(w, 0, mapa[posAgente], 0, mapa[posAgente].length);
+		System.arraycopy(w, 0, this.w, 0, this.w.length);
 	}
 
 	public Movimiento getAccion() {
 		return accion;
 	}
-	
+
 }
