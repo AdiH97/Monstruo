@@ -53,7 +53,7 @@ public class Agente implements Ciclico {
 					break;
 			}
 		} else {
-			accion = Movimiento.NORTE;
+			//accion = Movimiento.NORTE;
 		}
 		accionp = accion;
 	}

@@ -80,18 +80,22 @@ public class Entorno extends JPanel implements Ciclico {
 
 				// Enviar percepciones al agente
 				agente.setW(s);
-
 				agente.calcularAccion();
 				Movimiento accion = agente.getAccion();
 
-				if (accion == Movimiento.NORTE && mapa[posAgente - columnas] == Elemento.PARED
-						|| accion == Movimiento.ESTE && mapa[posAgente + 1] == Elemento.PARED
-						|| accion == Movimiento.SUD && mapa[posAgente + columnas] == Elemento.PARED
-						|| accion == Movimiento.OESTE && mapa[posAgente - 1] == Elemento.PARED) {
-					s[Percepciones.GOLPE.ordinal()] = true;
-					agente.setW(s);
-					agente.calcularAccion();
-				}
+				do {
+					if (accion == Movimiento.NORTE && mapa[posAgente - columnas] == Elemento.PARED
+							|| accion == Movimiento.ESTE && mapa[posAgente + 1] == Elemento.PARED
+							|| accion == Movimiento.SUD && mapa[posAgente + columnas] == Elemento.PARED
+							|| accion == Movimiento.OESTE && mapa[posAgente - 1] == Elemento.PARED) {
+						s[Percepciones.GOLPE.ordinal()] = true;
+						agente.setW(s);
+						agente.calcularAccion();
+						accion = agente.getAccion();
+					} else {
+						s[Percepciones.GOLPE.ordinal()] = false;
+					}
+				} while (s[Percepciones.GOLPE.ordinal()]);
 			}
 
 			agente.ciclo();
