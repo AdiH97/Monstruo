@@ -33,8 +33,9 @@ public class Entorno extends JPanel implements Ciclico {
 
 		mapa = new Elemento[filas * columnas];
 
-		for (int i = 0; i < filas * columnas; i++)
+		for (int i = 0; i < filas * columnas; i++) {
 			mapa[i] = Elemento.NADA;
+		}
 		for (int i = 0; i < columnas; i++) {
 			final int primeraFila = 0 * columnas;
 			final int ultimaFila = (filas - 1) * columnas;
@@ -77,19 +78,23 @@ public class Entorno extends JPanel implements Ciclico {
 				s[Percepciones.GOLPE.ordinal()] = false;
 				s[Percepciones.NADA.ordinal()] = false;
 
-				// Enviar percepciones al agente
-				agente.setW(s);
-				agente.calcularAccion();
-				Movimiento accion = agente.getAccion();
+				// Obtener la última acción del agente
+				Movimiento accionp = agente.getAccionp();
 
-				if (accion == Movimiento.NORTE && mapa[posAgente - columnas] == Elemento.PARED
-					|| accion == Movimiento.ESTE && mapa[posAgente + 1] == Elemento.PARED
-					|| accion == Movimiento.SUD && mapa[posAgente + columnas] == Elemento.PARED
-					|| accion == Movimiento.OESTE && mapa[posAgente - 1] == Elemento.PARED) {
+				// Comprobar si hay una pared en la dirección del agente
+				if (accionp == Movimiento.NORTE && mapa[posAgente - columnas] == Elemento.PARED
+						|| accionp == Movimiento.ESTE && mapa[posAgente + 1] == Elemento.PARED
+						|| accionp == Movimiento.SUD && mapa[posAgente + columnas] == Elemento.PARED
+						|| accionp == Movimiento.OESTE && mapa[posAgente - 1] == Elemento.PARED) {
 					s[Percepciones.GOLPE.ordinal()] = true;
-					agente.setW(s);
-					agente.calcularAccion();
+				} else {
+					s[Percepciones.GOLPE.ordinal()] = false;
 				}
+
+				// Enviar percepciones
+				agente.setW(s);
+				
+				agente.calcularAccion();
 			}
 
 			agente.ciclo();
@@ -123,8 +128,9 @@ public class Entorno extends JPanel implements Ciclico {
 			atlas.pintarTexturaEscala(g, (i % columnas) * atlas.getSubancho(), (i / columnas) * atlas.getSubalto(), indice, integralFactor);
 		}
 
-		for (Agente agente : agentes)
+		for (Agente agente : agentes) {
 			agente.pintar(g, integralFactor);
+		}
 	}
 
 	@Override
@@ -168,7 +174,7 @@ public class Entorno extends JPanel implements Ciclico {
 		int idx = 0;
 		while (!found && idx < agentes.size()) {
 			if (agentes.get(idx).getX() == x
-				&& agentes.get(idx).getY() == y) {
+					&& agentes.get(idx).getY() == y) {
 				res = idx;
 				found = true;
 			}

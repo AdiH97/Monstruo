@@ -125,5 +125,9 @@ public class Agente implements Ciclico {
 	public Movimiento getAccion() {
 		return accion;
 	}
+	
+	public Movimiento getAccionp() {
+		return accionp;
+	}
 
 }
