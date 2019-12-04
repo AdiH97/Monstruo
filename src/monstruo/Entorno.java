@@ -14,11 +14,11 @@ public class Entorno extends JPanel implements Ciclico {
 	private int integralFactor;
 
 	private enum Elemento {
-		MONSTRUO, PRECIPICIO, TESORO, SIN_USAR, PARED, NADA
+		MONSTRUO, PRECIPICIO, TESORO, MONSTRUO_MUERTO, PARED, NADA
 	}
 
 	protected enum Percepciones {
-		HEDOR, BRISA, RESPLANDOR, GEMIDO, GOLPE, NADA
+		HEDOR, BRISA, RESPLANDOR, GEMIDO, GOLPE, NADA, POSIBLE_MONSTRUO, MONSTRUO
 	}
 	private final Elemento[] mapa;
 	private final ArrayList<Agente> agentes;
@@ -46,8 +46,7 @@ public class Entorno extends JPanel implements Ciclico {
 			final int ultimaColumna = columnas - 1;
 			mapa[i * columnas + primeraColumna] = mapa[i * columnas + ultimaColumna] = Elemento.PARED;
 		}
-
-		mapa[69] = Elemento.MONSTRUO;
+		mapa[33] = Elemento.MONSTRUO;
 		agentes.add(new Agente(atlas, filas, columnas, 1, 1));
 	}
 

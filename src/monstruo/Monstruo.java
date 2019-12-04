@@ -42,7 +42,7 @@ public class Monstruo {
 
 	private static final int PADDING = 25;
 	private static final int MIN_TICK = 60;
-	private static final int MAX_TICK = 360;
+	private static final int MAX_TICK = 720;
 	private static final int ICON_SIZE = 30;
 
 	private static int framerate = 60;
@@ -67,7 +67,7 @@ public class Monstruo {
 			// CONSTRUCCIÓN E INICIALIZACIÓN DE LA INTERFAZ GRÁFICA //
 			// El agente inicialmente está parado
 			isMoving = false;
-			Entorno jpEntorno = new Entorno(atlas, 20, 20);
+			Entorno jpEntorno = new Entorno(atlas, 10, 10);
 
 			// Evento del entorno (click)
 			jpEntorno.addMouseListener(new MouseListener() {
@@ -201,8 +201,8 @@ public class Monstruo {
 			jslTicks.setPaintTrack(true);     // Línea
 			jslTicks.setPaintTicks(true);     // Marcas de ticks
 			jslTicks.setPaintLabels(true);    // Texto de los ticks
-			jslTicks.setMajorTickSpacing(50); // Espacios entre ticks
-			jslTicks.setMinorTickSpacing(50);
+			jslTicks.setMajorTickSpacing(120); // Espacios entre ticks
+			jslTicks.setMinorTickSpacing(120);
 			jslTicks.addChangeListener((ChangeEvent cl) -> {
 				// Cuando se cambia el valor del slider, cambia el valor del 
 				// límite de ticks

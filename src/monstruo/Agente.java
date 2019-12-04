@@ -20,7 +20,7 @@ public class Agente implements Ciclico {
 	protected enum Movimiento {
 		NORTE, ESTE, SUD, OESTE
 	}
-	private Movimiento accion, accionp;
+	private Movimiento accion, accionp, accionpp;
 
 	public Agente(Atlas atlas, int filas, int columnas, int X, int Y) {
 		this.atlas = atlas;
@@ -39,7 +39,7 @@ public class Agente implements Ciclico {
 	public void calcularAccion() {
 		int posAgente = getY() * columnas + getX();
 
-		if (w[Percepciones.GOLPE.ordinal()]) {
+		if (w[Percepciones.GOLPE.ordinal()] || w[Percepciones.HEDOR.ordinal()]) {
 			switch (accionp) {
 				case NORTE:
 					accion = Movimiento.ESTE;
@@ -54,8 +54,7 @@ public class Agente implements Ciclico {
 					accion = Movimiento.NORTE;
 					break;
 			}
-		} else {
-			// Recorrer las casillas vacías
+		} else { // Recorrer las casillas vacías
 			if (getY() - 1 > 0 && mapa[posAgente - columnas] == null) {
 				accion = Movimiento.NORTE;
 			} else if (getX() + 1 < filas - 1 && mapa[posAgente + 1] == null) {
@@ -66,6 +65,7 @@ public class Agente implements Ciclico {
 				accion = Movimiento.OESTE;
 			}
 		}
+		accionpp = accionp;
 		accionp = accion;
 	}
 
@@ -120,13 +120,25 @@ public class Agente implements Ciclico {
 		int indice = direccion + (piernaAire ? 1 : 0) + (piernaAire && alternaPierna ? 1 : 0);
 		atlas.pintarTexturaEscala(g, x, y, indice, escala);
 
-		g.setColor(new Color(0, 128, 255, 100));
+		
 		for (int i = 0; i < mapa.length; i++) {
+			g.setColor(new Color(0, 128, 255, 100));
 			int casillax = (i % columnas) * atlas.getSubancho();
 			int casillay = (i / columnas) * atlas.getSubalto();
 			if (mapa[(i % columnas) + columnas * (i / columnas)] != null) {
-				g.fillRect(casillax, casillay, atlas.getSubancho(), atlas.getSubalto());
+				if (mapa[(i % columnas) + columnas * (i / columnas)][Percepciones.HEDOR.ordinal()]) {
+					g.setColor(new Color(32, 128, 0, 100));
+				}
+				g.fillRect(casillax * escala, casillay * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 			}
+		}
+
+		if (w[Percepciones.GOLPE.ordinal()]) {
+			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
+			atlas.pintarTexturaEscala(g,
+									  getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
+									  getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1],
+									  2, escala);
 		}
 	}
 
