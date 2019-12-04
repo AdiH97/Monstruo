@@ -39,7 +39,23 @@ public class Agente implements Ciclico {
 	public void calcularAccion() {
 		int posAgente = getY() * columnas + getX();
 
-		if (w[Percepciones.GOLPE.ordinal()] || w[Percepciones.HEDOR.ordinal()]) {
+		if (w[Percepciones.HEDOR.ordinal()]) {
+			// Marcar los posibles sitios con monstruos
+			int[] offset = {-columnas, 1, +columnas, -1};
+			for (int i = 0; i < offset.length; i++) {
+				if (mapa[posAgente + offset[i]] == null) {
+					mapa[posAgente + offset[i]] = new boolean[Percepciones.values().length];
+					mapa[posAgente + offset[i]][Percepciones.POSIBLE_MONSTRUO.ordinal()] = true;
+				} else {
+					boolean posible = mapa[posAgente + offset[i]][Percepciones.POSIBLE_MONSTRUO.ordinal()];
+					if (posible) {
+						mapa[posAgente + offset[i]][Percepciones.MONSTRUO.ordinal()] = true;
+					}
+				}
+			}
+		}
+
+		if (w[Percepciones.GOLPE.ordinal()]) {
 			switch (accionp) {
 				case NORTE:
 					accion = Movimiento.ESTE;
@@ -120,7 +136,6 @@ public class Agente implements Ciclico {
 		int indice = direccion + (piernaAire ? 1 : 0) + (piernaAire && alternaPierna ? 1 : 0);
 		atlas.pintarTexturaEscala(g, x, y, indice, escala);
 
-		
 		for (int i = 0; i < mapa.length; i++) {
 			g.setColor(new Color(0, 128, 255, 100));
 			int casillax = (i % columnas) * atlas.getSubancho();
@@ -128,17 +143,23 @@ public class Agente implements Ciclico {
 			if (mapa[(i % columnas) + columnas * (i / columnas)] != null) {
 				if (mapa[(i % columnas) + columnas * (i / columnas)][Percepciones.HEDOR.ordinal()]) {
 					g.setColor(new Color(32, 128, 0, 100));
+					g.fillRect(casillax * escala, casillay * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+
 				}
-				g.fillRect(casillax * escala, casillay * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+				if (mapa[(i % columnas) + columnas * (i / columnas)][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
+					g.setColor(new Color(255, 0, 0, 100));
+					g.fillRect(casillax * escala, casillay * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+
+				}
 			}
 		}
 
 		if (w[Percepciones.GOLPE.ordinal()]) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			atlas.pintarTexturaEscala(g,
-									  getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
-									  getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1],
-									  2, escala);
+					getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
+					getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1],
+					2, escala);
 		}
 	}
 
@@ -152,7 +173,7 @@ public class Agente implements Ciclico {
 
 	public void setW(boolean[] w) {
 		int posAgente = getY() * columnas + getX();
-		mapa[posAgente] = new boolean[w.length];
+		mapa[posAgente] = new boolean[Percepciones.values().length];
 		System.arraycopy(w, 0, this.w, 0, this.w.length);
 		System.arraycopy(w, 0, mapa[posAgente], 0, this.w.length);
 	}
