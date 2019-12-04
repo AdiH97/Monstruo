@@ -36,7 +36,9 @@ public class Agente implements Ciclico {
 		accion = accionp = Movimiento.NORTE;
 	}
 
-	public void calcularAccion() {		
+	public void calcularAccion() {
+		int posAgente = getY() * columnas + getX();
+
 		if (w[Percepciones.GOLPE.ordinal()]) {
 			switch (accionp) {
 				case NORTE:
@@ -53,7 +55,16 @@ public class Agente implements Ciclico {
 					break;
 			}
 		} else {
-			//accion = Movimiento.NORTE;
+			// Recorrer las casillas vacías
+			if (getY() - 1 > 0 && mapa[posAgente - columnas] == null) {
+				accion = Movimiento.NORTE;
+			} else if (getX() + 1 < filas - 1 && mapa[posAgente + 1] == null) {
+				accion = Movimiento.ESTE;
+			} else if (getY() + 1 < columnas - 1 && mapa[posAgente + columnas] == null) {
+				accion = Movimiento.SUD;
+			} else if (getX() - 1 > 1 && mapa[posAgente - 1] == null) {
+				accion = Movimiento.OESTE;
+			}
 		}
 		accionp = accion;
 	}
@@ -108,6 +119,15 @@ public class Agente implements Ciclico {
 	public void pintar(Graphics g, int escala) {
 		int indice = direccion + (piernaAire ? 1 : 0) + (piernaAire && alternaPierna ? 1 : 0);
 		atlas.pintarTexturaEscala(g, x, y, indice, escala);
+
+		g.setColor(new Color(0, 128, 255, 100));
+		for (int i = 0; i < mapa.length; i++) {
+			int casillax = (i % columnas) * atlas.getSubancho();
+			int casillay = (i / columnas) * atlas.getSubalto();
+			if (mapa[(i % columnas) + columnas * (i / columnas)] != null) {
+				g.fillRect(casillax, casillay, atlas.getSubancho(), atlas.getSubalto());
+			}
+		}
 	}
 
 	public int getX() {
@@ -119,13 +139,16 @@ public class Agente implements Ciclico {
 	}
 
 	public void setW(boolean[] w) {
+		int posAgente = getY() * columnas + getX();
+		mapa[posAgente] = new boolean[w.length];
 		System.arraycopy(w, 0, this.w, 0, this.w.length);
+		System.arraycopy(w, 0, mapa[posAgente], 0, this.w.length);
 	}
 
 	public Movimiento getAccion() {
 		return accion;
 	}
-	
+
 	public Movimiento getAccionp() {
 		return accionp;
 	}
