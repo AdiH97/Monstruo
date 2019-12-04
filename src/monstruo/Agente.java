@@ -82,6 +82,7 @@ public class Agente implements Ciclico {
 			}
 		}
 
+		/* SI PETA QUITAD ESTA MIERDA DE AQUÍ HASTA accionpp */
 		int[][] offset = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
 		if (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]] != null && mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
 			boolean vaANoVisitada = false;
