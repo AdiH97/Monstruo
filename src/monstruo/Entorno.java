@@ -46,9 +46,9 @@ public class Entorno extends JPanel implements Ciclico {
 			final int ultimaColumna = columnas - 1;
 			mapa[i * columnas + primeraColumna] = mapa[i * columnas + ultimaColumna] = Elemento.PARED;
 		}
-		mapa[14] = Elemento.MONSTRUO;
-		mapa[33] = Elemento.MONSTRUO;
-		mapa[54] = Elemento.MONSTRUO;
+		mapa[18] = Elemento.MONSTRUO;
+		mapa[88] = Elemento.MONSTRUO;
+		mapa[81] = Elemento.MONSTRUO;
 		agentes.add(new Agente(atlas, filas, columnas, 1, 1));
 	}
 

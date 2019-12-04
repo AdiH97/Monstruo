@@ -81,6 +81,20 @@ public class Agente implements Ciclico {
 				accion = Movimiento.OESTE;
 			}
 		}
+		
+		int[] offset = {-columnas, 1, +columnas, -1};
+		if (mapa[posAgente + offset[accion.ordinal()]] != null && mapa[posAgente + offset[accion.ordinal()]][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
+			boolean vaANoVisitada = false;
+			for (int i = 0; i < accion.ordinal() && !vaANoVisitada; i++) {
+				if (mapa[posAgente + offset[i]] != null && getY() - 1 > 0 && getX() + 1 < filas - 1 && getY() + 1 < columnas - 1 && getX() - 1 > 1) {
+					accion = Movimiento.values()[i];
+					vaANoVisitada = true;
+				}
+			}
+			if (!vaANoVisitada)
+				accion = Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length];
+		}
+		
 		accionpp = accionp;
 		accionp = accion;
 	}
