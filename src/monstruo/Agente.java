@@ -19,7 +19,7 @@ public class Agente implements Ciclico {
 	private boolean w[];
 	
 	// Pila de movimientos inversos
-	private Stack pila_mov;
+	private Stack<Movimiento> pila_mov;
 
 	protected enum Movimiento {
 		NORTE, ESTE, SUD, OESTE
@@ -38,7 +38,7 @@ public class Agente implements Ciclico {
 		mapa = new boolean[filas][columnas][];
 		w = new boolean[Percepciones.values().length];
 		accion = accionp = Movimiento.NORTE;
-		pila_mov = new Stack();
+		pila_mov = new Stack<>();
 	}
 
 	public void calcularAccion() {
@@ -83,7 +83,7 @@ public class Agente implements Ciclico {
 						mapa[casilla_y][casilla_x][posPercepPMonstruo] = true;
 						
 						// Realizar acción anterior
-						accion = (Movimiento)pila_mov.pop();
+						accion = pila_mov.pop();
 					}
 				} else { // si no, monstruo "seguro"
 					// Si en la casilla hay la percepción de un posible monstruo, es que antes se había detectado hedor en
