@@ -159,18 +159,15 @@ public class Agente implements Ciclico {
 					if (mapa[i][j][Percepciones.HEDOR.ordinal()]) {
 						g.setColor(new Color(32, 128, 0, 100));
 						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
-					}
-					if (mapa[i][j][Percepciones.MONSTRUO.ordinal()]) {
+					} else if (mapa[i][j][Percepciones.MONSTRUO.ordinal()]) {
 						g.setColor(new Color(148, 6, 156, 100));
 						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
-					}
-
-					if (mapa[i][j][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
+					} else if (mapa[i][j][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
 						g.setColor(new Color(255, 0, 0, 100));
 						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 					} else {
-						//g.setColor(new Color(0, 128, 255, 100));
-						//g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+						g.setColor(new Color(0, 128, 255, 100));
+						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 					}
 				}
 			}
@@ -199,7 +196,7 @@ public class Agente implements Ciclico {
 		}
 		
 		for(int i = 0; i < w.length; i++) {
-			this.w[i] = this.w[i] || w[i];
+			this.w[i] = w[i];
 			mapa[getY()][getX()][i] = mapa[getY()][getX()][i] || w[i];
 		}
 	}
