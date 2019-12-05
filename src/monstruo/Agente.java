@@ -17,13 +17,14 @@ public class Agente implements Ciclico {
 
 	private final boolean[][][] mapa;
 	private boolean w[];
-	
+
 	// Pila de movimientos inversos
 	private Stack<Movimiento> pila_mov;
 
 	protected enum Movimiento {
 		NORTE, ESTE, SUD, OESTE
 	}
+
 	private Movimiento accion, accionp, accionpp;
 
 	public Agente(Atlas atlas, int filas, int columnas, int X, int Y) {
@@ -43,34 +44,26 @@ public class Agente implements Ciclico {
 
 	public void calcularAccion() {
 
-		boolean hedor = w[Percepciones.HEDOR.ordinal()];
+		int posHedor = Percepciones.HEDOR.ordinal();
 		int posPercepGolpe = Percepciones.GOLPE.ordinal();
 		int posPercepMonstruo = Percepciones.MONSTRUO.ordinal();
 		int posPercepPMonstruo = Percepciones.POSIBLE_MONSTRUO.ordinal();
+		int posBrisa = Percepciones.BRISA.ordinal();
+		int posResplandor = Percepciones.RESPLANDOR.ordinal();
+		int posGemido = Percepciones.GEMIDO.ordinal();
 
-		// norte, este, sud, oeste [y, x] 
-		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-		
-		if (w[Percepciones.GOLPE.ordinal()]) {
-			// Si hay un golpe, elegir la acción a realizar en base de otras percepciones
-			for(int i = 0; i < offset.length; i++) {
-			}
-			switch (accionp) {
-				case NORTE:
-					accion = Movimiento.ESTE;
-					break;
-				case ESTE:
-					accion = Movimiento.SUD;
-					break;
-				case SUD:
-					accion = Movimiento.OESTE;
-					break;
-				case OESTE:
-					accion = Movimiento.NORTE;
-					break;
-			}
-		} 
-		else if (hedor) {
+		boolean hedor = w[posHedor];
+		boolean golpe = w[posPercepGolpe];
+		boolean monstruo = w[posPercepMonstruo];
+		boolean posibleMonstruo = w[posPercepPMonstruo];
+		boolean brisa = w[posBrisa];
+		boolean resplandor = w[posResplandor];
+		boolean gemido = w[posGemido];
+
+		// norte, este, sud, oeste [y, x]
+		int offset[][] = { { -1, 0 }, { 0, 1 }, { 1, 0 }, { 0, -1 } };
+
+		if (hedor) {
 			for (int i = 0; i < offset.length; i++) {
 				int casilla_y = getY() + offset[i][0];
 				int casilla_x = getX() + offset[i][1];
@@ -81,20 +74,37 @@ public class Agente implements Ciclico {
 						// Indicar que hay un posible monstruo
 						mapa[casilla_y][casilla_x] = new boolean[Percepciones.values().length];
 						mapa[casilla_y][casilla_x][posPercepPMonstruo] = true;
-						
+
 						// Realizar acción anterior
 						accion = pila_mov.pop();
 					}
 				} else { // si no, monstruo "seguro"
-					// Si en la casilla hay la percepción de un posible monstruo, es que antes se había detectado hedor en
+					// Si en la casilla hay la percepción de un posible monstruo, es que antes se
+					// había detectado hedor en
 					// otra casilla que la envuelve. Por lo tanto, en esta casilla hay un monstruo.
 					if (mapa[casilla_y][casilla_x][posPercepPMonstruo] == true) {
 						mapa[casilla_y][casilla_x][posPercepMonstruo] = true;
 					}
 				}
 			}
-		}
-		else {
+		} else if (golpe) {
+			// Si hay un golpe, elegir la acción a realizar en base de otras percepciones
+
+			switch (accionp) {
+			case NORTE:
+				accion = Movimiento.ESTE;
+				break;
+			case ESTE:
+				accion = Movimiento.SUD;
+				break;
+			case SUD:
+				accion = Movimiento.OESTE;
+				break;
+			case OESTE:
+				accion = Movimiento.NORTE;
+				break;
+			}
+		} else {
 			// Recorrer las casillas vacías
 			if (getY() - 1 > 0 && mapa[getY() - 1][getX()] == null) {
 				accion = Movimiento.NORTE;
@@ -106,7 +116,7 @@ public class Agente implements Ciclico {
 				accion = Movimiento.OESTE;
 			}
 		}
-		
+
 		// Guardar en la pila la acción contraria
 		pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
 
@@ -117,47 +127,47 @@ public class Agente implements Ciclico {
 	@Override
 	public void ciclo() {
 		switch (ciclos % 32) {
-			case 0: // un ciclo propiamente dicho en el entorno, el resto de casos son intraciclo
-				// animación
-				switch (accion) {
-					case NORTE:
-						direccion = 6;
-						break;
-					case ESTE:
-						direccion = 9;
-						break;
-					case SUD:
-						direccion = 3;
-						break;
-					case OESTE:
-						direccion = 12;
-						break;
-				}
-				alternaPierna = !alternaPierna;
+		case 0: // un ciclo propiamente dicho en el entorno, el resto de casos son intraciclo
+			// animación
+			switch (accion) {
+			case NORTE:
+				direccion = 6;
 				break;
-			case 8:
-			case 24:
-				// animación
-				piernaAire = !piernaAire;
+			case ESTE:
+				direccion = 9;
 				break;
+			case SUD:
+				direccion = 3;
+				break;
+			case OESTE:
+				direccion = 12;
+				break;
+			}
+			alternaPierna = !alternaPierna;
+			break;
+		case 8:
+		case 24:
+			// animación
+			piernaAire = !piernaAire;
+			break;
 		}
 		// esto se hace siempre
 		// animación
 		switch (accion) {
-			case NORTE:
-				y -= 1;
-				break;
-			case ESTE:
-				x += 1;
-				break;
-			case SUD:
-				y += 1;
-				break;
-			case OESTE:
-				x -= 1;
-				break;
+		case NORTE:
+			y -= 1;
+			break;
+		case ESTE:
+			x += 1;
+			break;
+		case SUD:
+			y += 1;
+			break;
+		case OESTE:
+			x -= 1;
+			break;
 		}
-		//System.out.println(x + " " + y);
+		// System.out.println(x + " " + y);
 		ciclos++;
 	}
 
@@ -171,27 +181,29 @@ public class Agente implements Ciclico {
 				if (mapa[i][j] != null) {
 					if (mapa[i][j][Percepciones.HEDOR.ordinal()]) {
 						g.setColor(new Color(32, 128, 0, 100));
-						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala,
+								atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 					} else if (mapa[i][j][Percepciones.MONSTRUO.ordinal()]) {
 						g.setColor(new Color(148, 6, 156, 100));
-						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala,
+								atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 					} else if (mapa[i][j][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
 						g.setColor(new Color(255, 0, 0, 100));
-						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala,
+								atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 					} else {
 						g.setColor(new Color(0, 128, 255, 100));
-						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala,
+								atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 					}
 				}
 			}
 		}
 
 		if (w[Percepciones.GOLPE.ordinal()]) {
-			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
-			atlas.pintarTexturaEscala(g,
-					getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
-					getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1],
-					2, escala);
+			int[][] offset = { { 0, -16 }, { 16, 0 }, { 0, 16 }, { -16, 0 } };
+			atlas.pintarTexturaEscala(g, getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
+					getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1], 2, escala);
 		}
 	}
 
@@ -204,11 +216,11 @@ public class Agente implements Ciclico {
 	}
 
 	public void setW(boolean[] w) {
-		if(mapa[getY()][getX()] == null) {
+		if (mapa[getY()][getX()] == null) {
 			mapa[getY()][getX()] = new boolean[Percepciones.values().length];
 		}
-		
-		for(int i = 0; i < w.length; i++) {
+
+		for (int i = 0; i < w.length; i++) {
 			this.w[i] = w[i];
 			mapa[getY()][getX()][i] = mapa[getY()][getX()][i] || w[i];
 		}
