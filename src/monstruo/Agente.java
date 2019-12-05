@@ -32,24 +32,38 @@ public class Agente implements Ciclico {
 		this.filas = filas;
 		this.columnas = columnas;
 		mapa = new boolean[filas][columnas][];
-		w = new boolean[6];
+		w = new boolean[Percepciones.values().length];
 		accion = accionp = Movimiento.NORTE;
 	}
 
 	public void calcularAccion() {
-		int posAgente = getY() * columnas + getX();
 
-		if (w[Percepciones.HEDOR.ordinal()]) {
-			// Marcar los posibles sitios con monstruos
-			int[][] offset = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+		boolean hedor = w[Percepciones.HEDOR.ordinal()];
+
+		int posPercepGolpe = Percepciones.GOLPE.ordinal();
+		int posPercepMonstruo = Percepciones.MONSTRUO.ordinal();
+		int posPercepPMonstruo = Percepciones.POSIBLE_MONSTRUO.ordinal();
+
+		// norte, este, sud, oeste [y, x] 
+		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+		if (hedor) {
 			for (int i = 0; i < offset.length; i++) {
-				if (mapa[getY() + offset[i][0]][getX() + offset[i][1]] == null) {
-					mapa[getY() + offset[i][0]][getX() + offset[i][1]] = new boolean[Percepciones.values().length];
-					mapa[getY() + offset[i][0]][getX() + offset[i][1]][Percepciones.POSIBLE_MONSTRUO.ordinal()] = true;
+				int casilla_y = getY() + offset[i][0];
+				int casilla_x = getX() + offset[i][1];
+
+				// Si la casilla no ha sido visitada
+				if (mapa[casilla_y][casilla_x] == null) {
+					if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
+						// Indicar que hay un posible monstruo
+						mapa[casilla_y][casilla_x] = new boolean[Percepciones.values().length];
+						mapa[casilla_y][casilla_x][posPercepPMonstruo] = true;
+					}
 				} else {
-					boolean posible = mapa[getY() + offset[i][0]][getX() + offset[i][1]][Percepciones.POSIBLE_MONSTRUO.ordinal()];
-					if (posible) {
-						mapa[getY() + offset[i][0]][getX() + offset[i][1]][Percepciones.MONSTRUO.ordinal()] = true;
+					// Si en la casilla hay la percepción de un posible monstruo, es que antes se había detectado hedor en
+					// otra casilla que la envuelve. Por lo tanto, en esta casilla hay un monstruo.
+					if (mapa[casilla_y][casilla_x][posPercepPMonstruo] == true) {
+						mapa[casilla_y][casilla_x][posPercepMonstruo] = true;
 					}
 				}
 			}
@@ -70,7 +84,8 @@ public class Agente implements Ciclico {
 					accion = Movimiento.NORTE;
 					break;
 			}
-		} else { // Recorrer las casillas vacías
+		} else {
+			// Recorrer las casillas vacías
 			if (getY() - 1 > 0 && mapa[getY() - 1][getX()] == null) {
 				accion = Movimiento.NORTE;
 			} else if (getX() + 1 < filas - 1 && mapa[getY()][getX() + 1] == null) {
@@ -79,21 +94,6 @@ public class Agente implements Ciclico {
 				accion = Movimiento.SUD;
 			} else if (getX() - 1 > 1 && mapa[getY()][getX() - 1] == null) {
 				accion = Movimiento.OESTE;
-			}
-		}
-
-		/* SI PETA QUITAD ESTA MIERDA DE AQUÍ HASTA accionpp */
-		int[][] offset = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
-		if (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]] != null && mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
-			boolean vaANoVisitada = false;
-			for (int i = 0; i < accion.ordinal() && !vaANoVisitada; i++) {
-				if (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]] != null && getY() - 1 > 0 && getX() + 1 < filas - 1 && getY() + 1 < columnas - 1 && getX() - 1 > 1) {
-					accion = Movimiento.values()[i];
-					vaANoVisitada = true;
-				}
-			}
-			if (!vaANoVisitada) {
-				accion = Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length];
 			}
 		}
 
@@ -159,12 +159,18 @@ public class Agente implements Ciclico {
 					if (mapa[i][j][Percepciones.HEDOR.ordinal()]) {
 						g.setColor(new Color(32, 128, 0, 100));
 						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
-
 					}
+					if (mapa[i][j][Percepciones.MONSTRUO.ordinal()]) {
+						g.setColor(new Color(148, 6, 156, 100));
+						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
+					}
+
 					if (mapa[i][j][Percepciones.POSIBLE_MONSTRUO.ordinal()]) {
 						g.setColor(new Color(255, 0, 0, 100));
 						g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
-
+					} else {
+						//g.setColor(new Color(0, 128, 255, 100));
+						//g.fillRect(j * atlas.getSubancho() * escala, i * atlas.getSubalto() * escala, atlas.getSubancho() * escala, atlas.getSubalto() * escala);
 					}
 				}
 			}
@@ -173,9 +179,9 @@ public class Agente implements Ciclico {
 		if (w[Percepciones.GOLPE.ordinal()]) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			atlas.pintarTexturaEscala(g,
-									  getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
-									  getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1],
-									  2, escala);
+					getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
+					getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1],
+					2, escala);
 		}
 	}
 
@@ -188,9 +194,14 @@ public class Agente implements Ciclico {
 	}
 
 	public void setW(boolean[] w) {
-		mapa[getY()][getX()] = new boolean[Percepciones.values().length];
-		System.arraycopy(w, 0, this.w, 0, this.w.length);
-		System.arraycopy(w, 0, mapa[getY()][getX()], 0, this.w.length);
+		if(mapa[getY()][getX()] == null) {
+			mapa[getY()][getX()] = new boolean[Percepciones.values().length];
+		}
+		
+		for(int i = 0; i < w.length; i++) {
+			this.w[i] = this.w[i] || w[i];
+			mapa[getY()][getX()][i] = mapa[getY()][getX()][i] || w[i];
+		}
 	}
 
 	public Movimiento getAccion() {

@@ -58,25 +58,32 @@ public class Entorno extends JPanel implements Ciclico {
 	public void ciclo() {
 		for (Agente agente : agentes) {
 			if (ciclos % 32 == 0) {
-				// Percepciones
-				// [NADA, HEDOR, BRISA, RESPLANDOR, GEMIDO, GOLPE]
+				
+				// Array de percepciones a enviar al agente
 				boolean[] s = new boolean[Percepciones.values().length];
 
 				// Posición del agente
 				int agenteX = agente.getX();
 				int agenteY = agente.getY();
+				
+				// Percepciones de las casillas que envuelven al agente
+				int elem_norte = posElemento(mapa[agenteY - 1][agenteX]);
+				int elem_este = posElemento(mapa[agenteY][agenteX + 1]);
+				int elem_sud = posElemento(mapa[agenteY + 1][agenteX]);
+				int elem_oeste = posElemento(mapa[agenteY][agenteX - 1]);
+				
 
-				// casos hedor y brisa
-				s[mapa[agenteY - 1][agenteX].ordinal()] = true;
-				s[mapa[agenteY][agenteX + 1].ordinal()] = true;
-				s[mapa[agenteY + 1][agenteX].ordinal()] = true;
-				s[mapa[agenteY][agenteX - 1].ordinal()] = true;
+				// Marcar la percepción del elemento de las casillas que envuelven al agente
+				
+				s[elem_norte] = true;
+				s[elem_este] = true;
+				s[elem_sud] = true;
+				s[elem_oeste] = true;
 
 				s[Percepciones.RESPLANDOR.ordinal()] = (mapa[agenteY][agenteX] == Elemento.TESORO);
 
 				// no sé que poner aún así que lo pongo a false, modificar luego
 				s[Percepciones.GEMIDO.ordinal()] = false;
-				s[Percepciones.GOLPE.ordinal()] = false;
 				s[Percepciones.NADA.ordinal()] = false;
 
 				// Obtener la última acción del agente
@@ -200,6 +207,14 @@ public class Entorno extends JPanel implements Ciclico {
 
 	public int getIntegralFactor() {
 		return integralFactor;
+	}
+	
+	public int posPercepcion (Percepciones percepcion) {
+		return percepcion.ordinal();
+	}
+	
+	public int posElemento (Elemento elemento) {
+		return elemento.ordinal();
 	}
 
 }
