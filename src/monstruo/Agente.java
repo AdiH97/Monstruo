@@ -3,6 +3,7 @@ package monstruo;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.Arrays;
+import java.util.Stack;
 import monstruo.Entorno.Percepciones;
 
 public class Agente implements Ciclico {
@@ -16,6 +17,9 @@ public class Agente implements Ciclico {
 
 	private final boolean[][][] mapa;
 	private boolean w[];
+	
+	// Pila de movimientos inversos
+	private Stack pila_mov;
 
 	protected enum Movimiento {
 		NORTE, ESTE, SUD, OESTE
@@ -34,42 +38,23 @@ public class Agente implements Ciclico {
 		mapa = new boolean[filas][columnas][];
 		w = new boolean[Percepciones.values().length];
 		accion = accionp = Movimiento.NORTE;
+		pila_mov = new Stack();
 	}
 
 	public void calcularAccion() {
 
 		boolean hedor = w[Percepciones.HEDOR.ordinal()];
-
 		int posPercepGolpe = Percepciones.GOLPE.ordinal();
 		int posPercepMonstruo = Percepciones.MONSTRUO.ordinal();
 		int posPercepPMonstruo = Percepciones.POSIBLE_MONSTRUO.ordinal();
 
 		// norte, este, sud, oeste [y, x] 
 		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
-		if (hedor) {
-			for (int i = 0; i < offset.length; i++) {
-				int casilla_y = getY() + offset[i][0];
-				int casilla_x = getX() + offset[i][1];
-
-				// Si la casilla no ha sido visitada
-				if (mapa[casilla_y][casilla_x] == null) {
-					if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
-						// Indicar que hay un posible monstruo
-						mapa[casilla_y][casilla_x] = new boolean[Percepciones.values().length];
-						mapa[casilla_y][casilla_x][posPercepPMonstruo] = true;
-					}
-				} else {
-					// Si en la casilla hay la percepción de un posible monstruo, es que antes se había detectado hedor en
-					// otra casilla que la envuelve. Por lo tanto, en esta casilla hay un monstruo.
-					if (mapa[casilla_y][casilla_x][posPercepPMonstruo] == true) {
-						mapa[casilla_y][casilla_x][posPercepMonstruo] = true;
-					}
-				}
-			}
-		}
-
+		
 		if (w[Percepciones.GOLPE.ordinal()]) {
+			// Si hay un golpe, elegir la acción a realizar en base de otras percepciones
+			for(int i = 0; i < offset.length; i++) {
+			}
 			switch (accionp) {
 				case NORTE:
 					accion = Movimiento.ESTE;
@@ -84,7 +69,32 @@ public class Agente implements Ciclico {
 					accion = Movimiento.NORTE;
 					break;
 			}
-		} else {
+		} 
+		else if (hedor) {
+			for (int i = 0; i < offset.length; i++) {
+				int casilla_y = getY() + offset[i][0];
+				int casilla_x = getX() + offset[i][1];
+
+				// Si la casilla no ha sido visitada, posible monstruo
+				if (mapa[casilla_y][casilla_x] == null) {
+					if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
+						// Indicar que hay un posible monstruo
+						mapa[casilla_y][casilla_x] = new boolean[Percepciones.values().length];
+						mapa[casilla_y][casilla_x][posPercepPMonstruo] = true;
+						
+						// Realizar acción anterior
+						accion = (Movimiento)pila_mov.pop();
+					}
+				} else { // si no, monstruo "seguro"
+					// Si en la casilla hay la percepción de un posible monstruo, es que antes se había detectado hedor en
+					// otra casilla que la envuelve. Por lo tanto, en esta casilla hay un monstruo.
+					if (mapa[casilla_y][casilla_x][posPercepPMonstruo] == true) {
+						mapa[casilla_y][casilla_x][posPercepMonstruo] = true;
+					}
+				}
+			}
+		}
+		else {
 			// Recorrer las casillas vacías
 			if (getY() - 1 > 0 && mapa[getY() - 1][getX()] == null) {
 				accion = Movimiento.NORTE;
@@ -92,10 +102,13 @@ public class Agente implements Ciclico {
 				accion = Movimiento.ESTE;
 			} else if (getY() + 1 < columnas - 1 && mapa[getY() + 1][getX()] == null) {
 				accion = Movimiento.SUD;
-			} else if (getX() - 1 > 1 && mapa[getY()][getX() - 1] == null) {
+			} else if (getX() - 1 > 0 && mapa[getY()][getX() - 1] == null) {
 				accion = Movimiento.OESTE;
 			}
 		}
+		
+		// Guardar en la pila la acción contraria
+		pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
 
 		accionpp = accionp;
 		accionp = accion;
