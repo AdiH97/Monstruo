@@ -47,30 +47,23 @@ public class Agente implements Ciclico {
 		int posPercepGolpe = Percepciones.GOLPE.ordinal();
 		int posPercepMonstruo = Percepciones.MONSTRUO.ordinal();
 		int posPercepPMonstruo = Percepciones.POSIBLE_MONSTRUO.ordinal();
+		int posBrisa = Percepciones.BRISA.ordinal();
+		int posResplandor = Percepciones.RESPLANDOR.ordinal();
+		int posGemido = Percepciones.GEMIDO.ordinal();
 
-		// norte, este, sud, oeste [y, x] 
+		boolean hedor = w[posHedor];
+		boolean golpe = w[posPercepGolpe];
+		boolean monstruo = mapa[getY()][getX()][posPercepMonstruo];
+		boolean posibleMonstruo = w[posPercepPMonstruo];
+		boolean brisa = w[posBrisa];
+		boolean resplandor = w[posResplandor];
+		boolean gemido = w[posGemido];
+
+		// norte, este, sud, oeste [y, x]
 		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-		
-		if (w[Percepciones.GOLPE.ordinal()]) {
-			// Si hay un golpe, elegir la acción a realizar en base de otras percepciones
-			for(int i = 0; i < offset.length; i++) {
-			}
-			switch (accionp) {
-				case NORTE:
-					accion = Movimiento.ESTE;
-					break;
-				case ESTE:
-					accion = Movimiento.SUD;
-					break;
-				case SUD:
-					accion = Movimiento.OESTE;
-					break;
-				case OESTE:
-					accion = Movimiento.NORTE;
-					break;
-			}
-		} 
-		else if (hedor) {
+
+		// Actualizar posición del monstruo y precipicios
+		if (hedor) {
 			for (int i = 0; i < offset.length; i++) {
 				int casilla_y = getY() + offset[i][0];
 				int casilla_x = getX() + offset[i][1];
@@ -81,9 +74,6 @@ public class Agente implements Ciclico {
 						// Indicar que hay un posible monstruo
 						mapa[casilla_y][casilla_x] = new boolean[Percepciones.values().length];
 						mapa[casilla_y][casilla_x][posPercepPMonstruo] = true;
-						
-						// Realizar acción anterior
-						accion = (Movimiento)pila_mov.pop();
 					}
 				} else { // si no, monstruo "seguro"
 					// Si en la casilla hay la percepción de un posible monstruo, es que antes se había detectado hedor en
@@ -94,7 +84,36 @@ public class Agente implements Ciclico {
 				}
 			}
 		}
-		else {
+
+		Movimiento prohibido = null;
+		if (golpe) {
+			prohibido = accionp;
+		}
+
+		/**
+		 * *********
+		 */
+		if (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]] != null
+				&& (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepciones.POSIBLE_MONSTRUO.ordinal()] 
+				|| mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepciones.MONSTRUO.ordinal()])) {
+			accion = accionp;
+			while (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]] != null
+					&& (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepciones.POSIBLE_MONSTRUO.ordinal()]
+					|| mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepciones.MONSTRUO.ordinal()])) {
+				accion = Movimiento.values()[(accion.ordinal() + 1) % Movimiento.values().length];
+			}
+			System.err.println("Test");
+		}
+		/**
+		 * ********
+		 */
+
+		if (hedor) {
+			accion = pila_mov.pop();
+			while (prohibido != null && prohibido == accion) {
+				accion = pila_mov.pop();
+			}
+		} else {
 			// Recorrer las casillas vacías
 			if (getY() - 1 > 0 && mapa[getY() - 1][getX()] == null) {
 				accion = Movimiento.NORTE;
@@ -107,6 +126,24 @@ public class Agente implements Ciclico {
 			}
 		}
 		
+		if(accion == prohibido) {
+			while (prohibido != null && prohibido == accion) {
+				accion = Movimiento.values()[(accion.ordinal() + 1) % Movimiento.values().length];
+			}
+		}
+		
+		boolean alguna_no_visitada = false;
+		for(int i = 0; i < offset.length; i++) {
+			if(mapa[getY() + offset[i][0]][getX() + offset[i][1]] == null) {
+				alguna_no_visitada = true;
+				break;
+			}
+		}
+		
+		if(!alguna_no_visitada) {
+			accion = pila_mov.pop();
+		}
+
 		// Guardar en la pila la acción contraria
 		pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
 
@@ -157,7 +194,7 @@ public class Agente implements Ciclico {
 				x -= 1;
 				break;
 		}
-		//System.out.println(x + " " + y);
+		// System.out.println(x + " " + y);
 		ciclos++;
 	}
 
@@ -188,10 +225,8 @@ public class Agente implements Ciclico {
 
 		if (w[Percepciones.GOLPE.ordinal()]) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
-			atlas.pintarTexturaEscala(g,
-					getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
-					getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1],
-					2, escala);
+			atlas.pintarTexturaEscala(g, getX() * atlas.getSubancho() + offset[accionpp.ordinal()][0],
+					getY() * atlas.getSubalto() + offset[accionpp.ordinal()][1], 2, escala);
 		}
 	}
 
