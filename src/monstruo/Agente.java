@@ -19,7 +19,7 @@ public class Agente implements Ciclico {
 	private boolean w[];
 	
 	// Pila de movimientos inversos
-	private Stack pila_mov;
+	private Stack<Movimiento> pila_mov;
 
 	protected enum Movimiento {
 		NORTE, ESTE, SUD, OESTE
@@ -43,7 +43,6 @@ public class Agente implements Ciclico {
 
 	public void calcularAccion() {
 
-		boolean hedor = w[Percepciones.HEDOR.ordinal()];
 		int posPercepGolpe = Percepciones.GOLPE.ordinal();
 		int posPercepMonstruo = Percepciones.MONSTRUO.ordinal();
 		int posPercepPMonstruo = Percepciones.POSIBLE_MONSTRUO.ordinal();
@@ -51,7 +50,7 @@ public class Agente implements Ciclico {
 		int posResplandor = Percepciones.RESPLANDOR.ordinal();
 		int posGemido = Percepciones.GEMIDO.ordinal();
 
-		boolean hedor = w[posHedor];
+		boolean hedor = w[Percepciones.HEDOR.ordinal()];
 		boolean golpe = w[posPercepGolpe];
 		boolean monstruo = mapa[getY()][getX()][posPercepMonstruo];
 		boolean posibleMonstruo = w[posPercepPMonstruo];
