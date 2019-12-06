@@ -90,8 +90,8 @@ public class Monstruo {
 				@Override
 				public void mouseReleased(MouseEvent e) {
 					canPaint = false;
-					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getIntegralFactor());
-					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getIntegralFactor());
+					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getGfxFactorEscaladoIntegral());
+					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getGfxFactorEscaladoIntegral());
 
 					if (casillaX > 0 && casillaX < jpEntorno.getColumnas() - 1 && casillaY > 0 && casillaY < jpEntorno.getFilas() - 1) {
 						if (e.getButton() == 1) // Izquierdo
@@ -130,18 +130,18 @@ public class Monstruo {
 				// Pintar/Borrar paredes mientras se mantega pulsado el botón izquierdo
 				@Override
 				public void mouseDragged(MouseEvent e) {
-					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getIntegralFactor());
-					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getIntegralFactor());
+					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getGfxFactorEscaladoIntegral());
+					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getGfxFactorEscaladoIntegral());
 
 					if (casillaX > 0 && casillaX < jpEntorno.getColumnas() - 1 && casillaY > 0 && casillaY < jpEntorno.getFilas() - 1) {
 						if (canPaint) // Izquierdo
 						// Cambiar celda
 						{
-							if (canAddPared) {
+							/*if (canAddPared) {
 								jpEntorno.cambiarAPared(casillaX, casillaY);
 							} else if (canRemovePared) {
 								jpEntorno.cambiarASuelo(casillaX, casillaY);
-							}
+							}*/
 						}
 					}
 				}
