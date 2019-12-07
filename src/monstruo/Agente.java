@@ -55,26 +55,38 @@ public class Agente implements Ciclico {
 
 	public void calcularAccion() {
 
+		// Posiciones de las percepciones
 		int posPercepGolpe = Percepcion.GOLPE.ordinal();
 		int posPercepMonstruo = Percepcion.MONSTRUO.ordinal();
 		int posPercepPMonstruo = Percepcion.POSIBLE_MONSTRUO.ordinal();
 		int posBrisa = Percepcion.BRISA.ordinal();
 		int posResplandor = Percepcion.RESPLANDOR.ordinal();
 		int posGemido = Percepcion.GEMIDO.ordinal();
+		int posHedor = Percepcion.HEDOR.ordinal();
 
-		boolean hedor = w[Percepcion.HEDOR.ordinal()];
-		boolean golpe = w[posPercepGolpe];
-		boolean monstruo = mapa[getY()][getX()][posPercepMonstruo];
-		boolean posibleMonstruo = w[posPercepPMonstruo];
-		boolean brisa = w[posBrisa];
-		boolean resplandor = w[posResplandor];
-		boolean gemido = w[posGemido];
+		// Percepciones captadas del ambiente
+		boolean entorno_hedor = w[Percepcion.HEDOR.ordinal()];
+		boolean entorno_golpe = w[posPercepGolpe];
+		boolean entorno_brisa = w[posBrisa];
+		boolean entorno_resplandor = w[posResplandor];
+		boolean entorno_gemido = w[posGemido];
 
 		// norte, este, sud, oeste [y, x]
 		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 
-		// Actualizar posición del monstruo y precipicios
-		if (hedor) {
+		/**
+		 * 1. INFERIR CASILLAS ENVOLVENTES CON LAS PERCEPCIONES ACTUALES
+		 *
+		 */
+		// GOLPE
+		Movimiento prohibido = null;
+		if (entorno_golpe) {
+			// Indicar al agente que no siga avanzando en la misma dirección
+			prohibido = accionp;
+		}
+
+		// HEDOR
+		if (entorno_hedor) {
 			for (int i = 0; i < offset.length; i++) {
 				int casilla_y = getY() + offset[i][0];
 				int casilla_x = getX() + offset[i][1];
@@ -87,72 +99,121 @@ public class Agente implements Ciclico {
 						mapa[casilla_y][casilla_x][posPercepPMonstruo] = true;
 					}
 				} else { // si no, monstruo "seguro"
-					// Si en la casilla hay la percepción de un posible monstruo, es que antes se había detectado hedor en
+					// Si en la casilla hay la percepción de un posible monstruo, es que antes se
+					// había detectado hedor en
 					// otra casilla que la envuelve. Por lo tanto, en esta casilla hay un monstruo.
 					if (mapa[casilla_y][casilla_x][posPercepPMonstruo] == true) {
 						mapa[casilla_y][casilla_x][posPercepMonstruo] = true;
 					}
 				}
 			}
-		}
+		} else {
+			// Si no se ha percibido hedor en la casilla actual, evaluar las casillas con posibles monstruos
+			for (int i = 0; i < offset.length; i++) {
+				int casilla_y = getY() + offset[i][0];
+				int casilla_x = getX() + offset[i][1];
+				boolean[] percep_cas = mapa[casilla_y][casilla_x];
 
-		Movimiento prohibido = null;
-		if (golpe) {
-			prohibido = accionp;
-		}
-
-		/**
-		 * *********
-		 */
-		if (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]] != null
-			&& (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepcion.POSIBLE_MONSTRUO.ordinal()]
-				|| mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepcion.MONSTRUO.ordinal()])) {
-			accion = accionp;
-			while (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]] != null
-				   && (mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepcion.POSIBLE_MONSTRUO.ordinal()]
-					   || mapa[getY() + offset[accion.ordinal()][0]][getX() + offset[accion.ordinal()][1]][Percepcion.MONSTRUO.ordinal()])) {
-				accion = Movimiento.values()[(accion.ordinal() + 1) % Movimiento.values().length];
+				// TODO: Comprobar las casillas con Monstruos falsos
+				if (percep_cas != null) {
+					// Si se he detectado un posible monstruo y no hay hedor en las casillas adyacentes, es seguro decir
+					// que no hay monstruo
+					if (percep_cas[posPercepPMonstruo]) {
+						mapa[casilla_y][casilla_x][posPercepPMonstruo] = false;
+					}
+				}
 			}
-			System.err.println("Test");
 		}
-		/**
-		 * ********
-		 */
 
-		if (hedor) {
-			accion = pila_mov.pop();
-			while (prohibido != null && prohibido == accion) {
+		// BRISA
+		if (entorno_brisa) {
+			// Marcar casilla como brisa
+			// Intentar inferir la posición del precipicio
+			// Si no se ha podido, marcar las posibles posiciones del percipicio
+		}
+
+		// RESPLANDOR
+		if (entorno_resplandor) {
+
+		}
+
+		/**
+		 * 2. REALIZAR ACCIÓN CON LA BC Y LAS PERCEPCIONES ACTUALES
+		 *
+		 */
+		// Buscar casillas vacías
+		boolean casilla_vacia_encontrada = false;
+
+		for (int i = 0; i < Movimiento.values().length; i++) {
+			boolean[] percep_casilla = mapa[getY() + offset[i][0]][getX() + offset[i][1]];
+
+			// Si la casilla está vacía
+			if (percep_casilla == null) {
+				// Mirar si es una posible acción
+				Movimiento pos_accion = Movimiento.values()[i];
+
+				// Si la acción no está prohibida (se ha detectado un golpe)
+				if (pos_accion != prohibido) {
+					// Mirar si al realizar la acción no se sale de las paredes
+					if (getY() - 1 > 0 && pos_accion == Movimiento.NORTE) {
+						accion = Movimiento.NORTE;
+						casilla_vacia_encontrada = true;
+						break;
+					} else if (getX() + 1 < filas - 1 && pos_accion == Movimiento.ESTE) {
+						accion = Movimiento.ESTE;
+						casilla_vacia_encontrada = true;
+						break;
+					} else if (getY() + 1 < columnas - 1 && pos_accion == Movimiento.SUD) {
+						accion = Movimiento.SUD;
+						casilla_vacia_encontrada = true;
+						break;
+					} else if (getX() - 1 > 0 && pos_accion == Movimiento.OESTE) {
+						accion = Movimiento.OESTE;
+						casilla_vacia_encontrada = true;
+						break;
+					}
+					// Si el movimiento está prohibido, mirar la siguiente casilla
+				}
+			}
+		}
+
+		// Si todas las casillas están ocupadas
+		if (!casilla_vacia_encontrada) {
+
+			// Buscar la casilla más segura
+			Movimiento pos_mov = null;
+			for (int i = 0; i < Movimiento.values().length; i++) {
+
+				if (Movimiento.values()[i] != pila_mov.peek()) {
+					boolean[] percep_casilla = mapa[getY() + offset[i][0]][getX() + offset[i][1]];
+
+					// TODO: Corregir casilla vacía no encontrada por que es un movimiento prohibido
+					if (percep_casilla != null) {
+						//	TODO: Añadir ninguna percepción a Percepcion
+
+						// Mirar si hay alguna percepción en la casilla
+						boolean alguna_percepcion = false;
+						for (int j = 0; j < Percepcion.values().length; j++) {
+							if (percep_casilla[j]) {
+								alguna_percepcion = true;
+								break;
+							}
+						}
+
+						// Avanzar en la casilla en la cual no hay percepciones (más prioritario)
+						if (!alguna_percepcion) {
+							pos_mov = Movimiento.values()[i];
+							break;
+						}
+					}
+				}
+			}
+
+			if (pos_mov != null && pos_mov != pila_mov.peek()) {
+				accion = pos_mov;
+			} else {
 				accion = pila_mov.pop();
 			}
-		} else {
-			// Recorrer las casillas vacías
-			if (getY() - 1 > 0 && mapa[getY() - 1][getX()] == null) {
-				accion = Movimiento.NORTE;
-			} else if (getX() + 1 < filas - 1 && mapa[getY()][getX() + 1] == null) {
-				accion = Movimiento.ESTE;
-			} else if (getY() + 1 < columnas - 1 && mapa[getY() + 1][getX()] == null) {
-				accion = Movimiento.SUD;
-			} else if (getX() - 1 > 0 && mapa[getY()][getX() - 1] == null) {
-				accion = Movimiento.OESTE;
-			}
-		}
-
-		if (accion == prohibido) {
-			while (prohibido != null && prohibido == accion) {
-				accion = Movimiento.values()[(accion.ordinal() + 1) % Movimiento.values().length];
-			}
-		}
-
-		boolean alguna_no_visitada = false;
-		for (int i = 0; i < offset.length; i++) {
-			if (mapa[getY() + offset[i][0]][getX() + offset[i][1]] == null) {
-				alguna_no_visitada = true;
-				break;
-			}
-		}
-
-		if (!alguna_no_visitada) {
-			accion = pila_mov.pop();
 		}
 
 		// Guardar en la pila la acción contraria
@@ -204,6 +265,10 @@ public class Agente implements Ciclico {
 			case OESTE:
 				gfxX -= 1;
 				break;
+			default:
+				gfxY = 0;
+				gfxX = 0;
+				break;
 		}
 		// System.out.println(x + " " + y);
 		ciclos++;
@@ -237,7 +302,7 @@ public class Agente implements Ciclico {
 		if (w[Percepcion.GOLPE.ordinal()]) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gfxAtlas.pintarTexturaEscala(g, getX() * gfxAtlas.getSubancho() + offset[accionpp.ordinal()][0],
-										 getY() * gfxAtlas.getSubalto() + offset[accionpp.ordinal()][1], 2, escala);
+					getY() * gfxAtlas.getSubalto() + offset[accionpp.ordinal()][1], 2, escala);
 		}
 	}
 
