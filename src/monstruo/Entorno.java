@@ -56,6 +56,7 @@ public class Entorno extends JPanel implements Ciclico {
 		mapa[8][8] = Elemento.MONSTRUO;
 		mapa[8][1] = Elemento.MONSTRUO;
 		mapa[5][5] = Elemento.MONSTRUO;
+		mapa[3][1] = Elemento.MONSTRUO;
 		agentes[0] = new Agente(atlas, ATLAS_AMARILLO, filas, columnas, 1, 1);
 	}
 

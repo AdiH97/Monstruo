@@ -78,21 +78,26 @@ public class Agente implements Ciclico {
 		 * 1. INFERIR CASILLAS ENVOLVENTES CON LAS PERCEPCIONES ACTUALES
 		 *
 		 */
-		// GOLPE
+		// Movimiento que lleva hacia una pared
+		// TODO: Usar el movimiento prohibido en lugar de comprobar las paredes
 		Movimiento prohibido = null;
-		if (entorno_golpe) {
-			// Indicar al agente que no siga avanzando en la misma dirección
-			prohibido = accionp;
-		}
 
-		// HEDOR
-		if (entorno_hedor) {
-			for (int i = 0; i < offset.length; i++) {
-				int casilla_y = getY() + offset[i][0];
-				int casilla_x = getX() + offset[i][1];
+		// Por cada casilla que envuelve al agente
+		for (int i = 0; i < offset.length; i++) {
+			int casilla_y = getY() + offset[i][0];
+			int casilla_x = getX() + offset[i][1];
 
+			// GOLPE
+			if (entorno_golpe) {
+				// Indicar al agente que no siga avanzando en la misma dirección
+				prohibido = accionp;
+			}
+			
+			// HEDOR
+			if (entorno_hedor) {
 				// Si la casilla no ha sido visitada, posible monstruo
 				if (mapa[casilla_y][casilla_x] == null) {
+					// Y si la casilla no es una pared
 					if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
 						// Indicar que hay un posible monstruo
 						mapa[casilla_y][casilla_x] = new boolean[Percepcion.values().length];
@@ -106,118 +111,55 @@ public class Agente implements Ciclico {
 						mapa[casilla_y][casilla_x][posPercepMonstruo] = true;
 					}
 				}
-			}
-		} else {
-			// Si no se ha percibido hedor en la casilla actual, evaluar las casillas con posibles monstruos
-			for (int i = 0; i < offset.length; i++) {
-				int casilla_y = getY() + offset[i][0];
-				int casilla_x = getX() + offset[i][1];
-				boolean[] percep_cas = mapa[casilla_y][casilla_x];
-
-				// TODO: Comprobar las casillas con Monstruos falsos
-				if (percep_cas != null) {
+			} else {
+				// Si no se ha percibido hedor en la casilla actual, evaluar las casillas con posibles monstruos
+				if (mapa[casilla_y][casilla_x] != null) {
 					// Si se he detectado un posible monstruo y no hay hedor en las casillas adyacentes, es seguro decir
 					// que no hay monstruo
-					if (percep_cas[posPercepPMonstruo]) {
-						mapa[casilla_y][casilla_x][posPercepPMonstruo] = false;
-					}
+					mapa[casilla_y][casilla_x][posPercepPMonstruo] = false;
 				}
 			}
-		}
 
-		// BRISA
-		if (entorno_brisa) {
-			// Marcar casilla como brisa
-			// Intentar inferir la posición del precipicio
-			// Si no se ha podido, marcar las posibles posiciones del percipicio
-		}
+			// BRISA
+			if (entorno_brisa) {
+				// Marcar casilla como brisa
+				// Intentar inferir la posición del precipicio
+				// Si no se ha podido, marcar las posibles posiciones del percipicio
+			}
 
-		// RESPLANDOR
-		if (entorno_resplandor) {
+			// RESPLANDOR
+			if (entorno_resplandor) {
 
+			}
 		}
 
 		/**
 		 * 2. REALIZAR ACCIÓN CON LA BC Y LAS PERCEPCIONES ACTUALES
 		 *
 		 */
-		// Buscar casillas vacías
-		boolean casilla_vacia_encontrada = false;
+		Movimiento posible_accion = null;
+		for (int i = 0; i < offset.length; i++) {
+			int casilla_y = getY() + offset[i][0];
+			int casilla_x = getX() + offset[i][1];
 
-		for (int i = 0; i < Movimiento.values().length; i++) {
-			boolean[] percep_casilla = mapa[getY() + offset[i][0]][getX() + offset[i][1]];
-
-			// Si la casilla está vacía
-			if (percep_casilla == null) {
-				// Mirar si es una posible acción
-				Movimiento pos_accion = Movimiento.values()[i];
-
-				// Si la acción no está prohibida (se ha detectado un golpe)
-				if (pos_accion != prohibido) {
-					// Mirar si al realizar la acción no se sale de las paredes
-					if (getY() - 1 > 0 && pos_accion == Movimiento.NORTE) {
-						accion = Movimiento.NORTE;
-						casilla_vacia_encontrada = true;
-						break;
-					} else if (getX() + 1 < filas - 1 && pos_accion == Movimiento.ESTE) {
-						accion = Movimiento.ESTE;
-						casilla_vacia_encontrada = true;
-						break;
-					} else if (getY() + 1 < columnas - 1 && pos_accion == Movimiento.SUD) {
-						accion = Movimiento.SUD;
-						casilla_vacia_encontrada = true;
-						break;
-					} else if (getX() - 1 > 0 && pos_accion == Movimiento.OESTE) {
-						accion = Movimiento.OESTE;
-						casilla_vacia_encontrada = true;
-						break;
-					}
-					// Si el movimiento está prohibido, mirar la siguiente casilla
+			// Comprobar que la casilla no sea una pared
+			if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
+				if (mapa[casilla_y][casilla_x] == null) {
+					// Ir hacia la casilla vacía
+					posible_accion = Movimiento.values()[i];
 				}
 			}
 		}
 
-		// Si todas las casillas están ocupadas
-		if (!casilla_vacia_encontrada) {
-
-			// Buscar la casilla más segura
-			Movimiento pos_mov = null;
-			for (int i = 0; i < Movimiento.values().length; i++) {
-
-				if (Movimiento.values()[i] != pila_mov.peek()) {
-					boolean[] percep_casilla = mapa[getY() + offset[i][0]][getX() + offset[i][1]];
-
-					// TODO: Corregir casilla vacía no encontrada por que es un movimiento prohibido
-					if (percep_casilla != null) {
-						//	TODO: Añadir ninguna percepción a Percepcion
-
-						// Mirar si hay alguna percepción en la casilla
-						boolean alguna_percepcion = false;
-						for (int j = 0; j < Percepcion.values().length; j++) {
-							if (percep_casilla[j]) {
-								alguna_percepcion = true;
-								break;
-							}
-						}
-
-						// Avanzar en la casilla en la cual no hay percepciones (más prioritario)
-						if (!alguna_percepcion) {
-							pos_mov = Movimiento.values()[i];
-							break;
-						}
-					}
-				}
-			}
-
-			if (pos_mov != null && pos_mov != pila_mov.peek()) {
-				accion = pos_mov;
-			} else {
-				accion = pila_mov.pop();
-			}
+		// Ir hacia la casilla vacía
+		if (posible_accion != null) {
+			accion = posible_accion;
+			// Guardar en la pila la acción contraria
+			pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
+		} else {
+			// Volver atrás
+			accion = pila_mov.pop();
 		}
-
-		// Guardar en la pila la acción contraria
-		pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
 
 		accionpp = accionp;
 		accionp = accion;
