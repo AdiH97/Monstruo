@@ -55,8 +55,9 @@ public class Entorno extends JPanel implements Ciclico {
 		mapa[1][8] = Elemento.MONSTRUO;
 		mapa[8][8] = Elemento.MONSTRUO;
 		mapa[8][1] = Elemento.MONSTRUO;
-		mapa[5][5] = Elemento.MONSTRUO;
-		mapa[3][1] = Elemento.MONSTRUO;
+		mapa[6][2] = Elemento.MONSTRUO;
+		mapa[5][1] = Elemento.PRECIPICIO;
+		mapa[6][1] = Elemento.TESORO;
 		agentes[0] = new Agente(atlas, ATLAS_AMARILLO, filas, columnas, 1, 1);
 	}
 
@@ -93,32 +94,38 @@ public class Entorno extends JPanel implements Ciclico {
 	public void ciclo() {
 		for (int i = 0; i < numAgentes; i++) {
 			Agente agente = agentes[i];
-			if (ciclos % 32 == 0) {
 
-				// lista de percepciones a enviar al agente y sus índices //
-				boolean[] P = new boolean[4];
-				final int HEDOR = Percepcion.HEDOR.ordinal();
-				final int BRISA = Percepcion.BRISA.ordinal();
-				final int RESPLANDOR = Percepcion.RESPLANDOR.ordinal();
-				final int GOLPE = Percepcion.GOLPE.ordinal();
+			// posición del agente //
+			int X = agente.getX();
+			int Y = agente.getY();
 
-				// posición del agente y última acción del agente //
-				int X = agente.getX();
-				int Y = agente.getY();
-				Movimiento accionp = agente.getAccionp();
+			if (!(agente.isTesoroEncontrado() && X == agente.getStartX() && Y == agente.getStartY())) {
 
-				P[HEDOR] = casillasAdyacentes(mapa, X, Y).contains(Elemento.MONSTRUO);
-				P[BRISA] = casillasAdyacentes(mapa, X, Y).contains(Elemento.PRECIPICIO);
-				P[RESPLANDOR] = (casilla(mapa, X, Y) == Elemento.TESORO);
-				P[GOLPE] = (casillaSiguiente(mapa, X, Y, accionp) == Elemento.MURO);
+				if (ciclos % 32 == 0) {
 
-				// Enviar percepciones
-				agente.setW(P);
+					// lista de percepciones a enviar al agente y sus índices //
+					boolean[] P = new boolean[4];
+					final int HEDOR = Percepcion.HEDOR.ordinal();
+					final int BRISA = Percepcion.BRISA.ordinal();
+					final int RESPLANDOR = Percepcion.RESPLANDOR.ordinal();
+					final int GOLPE = Percepcion.GOLPE.ordinal();
 
-				agente.calcularAccion();
+					// posición del agente y última acción del agente //
+					Movimiento accionp = agente.getAccionp();
+
+					P[HEDOR] = casillasAdyacentes(mapa, X, Y).contains(Elemento.MONSTRUO);
+					P[BRISA] = casillasAdyacentes(mapa, X, Y).contains(Elemento.PRECIPICIO);
+					P[RESPLANDOR] = (casilla(mapa, X, Y) == Elemento.TESORO);
+					P[GOLPE] = (casillaSiguiente(mapa, X, Y, accionp) == Elemento.MURO);
+
+					// Enviar percepciones
+					agente.setW(P);
+
+					agente.calcularAccion();
+				}
+
+				agente.ciclo();
 			}
-
-			agente.ciclo();
 		}
 
 		ciclos++;
@@ -138,10 +145,10 @@ public class Entorno extends JPanel implements Ciclico {
 							indice = 17;
 							break;
 						case PRECIPICIO:
-							indice = 2;
+							indice = 32;
 							break;
 						case TESORO:
-							indice = 18;
+							indice = 48;
 							break;
 						case MURO:
 							indice = 1;

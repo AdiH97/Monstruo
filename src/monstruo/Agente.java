@@ -20,6 +20,10 @@ public class Agente implements Ciclico {
 	private final boolean[][][] mapa;
 	private boolean w[];
 
+	private boolean tesoro_encontrado;
+	
+	private final int STARTX, STARTY;
+
 	protected enum Percepcion {
 		HEDOR, BRISA, RESPLANDOR, GOLPE, POSIBLE_MONSTRUO, MONSTRUO, POSIBLE_PRECIPICIO, PRECIPICIO, GEMIDO
 	}
@@ -30,6 +34,7 @@ public class Agente implements Ciclico {
 	private static final int OPACIDAD_DEBUG = 192;
 	private static final Color COLOR_MONSTRUO = new Color(255, 0, 0, OPACIDAD_DEBUG);
 	private static final Color COLOR_POSIBLEMONSTRUO = new Color(255, 128, 0, OPACIDAD_DEBUG);
+	private static final Color COLOR_POSIBLEPRECIPICIO = new Color(0, 255, 255, OPACIDAD_DEBUG);
 
 	protected enum Movimiento {
 		NORTE, ESTE, SUD, OESTE
@@ -51,6 +56,10 @@ public class Agente implements Ciclico {
 		w = new boolean[Percepcion.values().length];
 		accion = accionp = Movimiento.NORTE;
 		pila_mov = new Stack();
+		tesoro_encontrado = false;
+		
+		STARTX = x;
+		STARTY = y;
 	}
 
 	public void calcularAccion() {
@@ -60,6 +69,7 @@ public class Agente implements Ciclico {
 		int posPercepMonstruo = Percepcion.MONSTRUO.ordinal();
 		int posPercepPMonstruo = Percepcion.POSIBLE_MONSTRUO.ordinal();
 		int posBrisa = Percepcion.BRISA.ordinal();
+		int posPBrisa = Percepcion.POSIBLE_PRECIPICIO.ordinal();
 		int posResplandor = Percepcion.RESPLANDOR.ordinal();
 		int posGemido = Percepcion.GEMIDO.ordinal();
 		int posHedor = Percepcion.HEDOR.ordinal();
@@ -92,7 +102,7 @@ public class Agente implements Ciclico {
 				// Indicar al agente que no siga avanzando en la misma dirección
 				prohibido = accionp;
 			}
-			
+
 			// HEDOR
 			if (entorno_hedor) {
 				// Si la casilla no ha sido visitada, posible monstruo
@@ -116,20 +126,38 @@ public class Agente implements Ciclico {
 				if (mapa[casilla_y][casilla_x] != null) {
 					// Si se he detectado un posible monstruo y no hay hedor en las casillas adyacentes, es seguro decir
 					// que no hay monstruo
-					mapa[casilla_y][casilla_x][posPercepPMonstruo] = false;
+					if (mapa[casilla_y][casilla_x][posPercepPMonstruo] == true) {
+						mapa[casilla_y][casilla_x] = null;
+					}
 				}
 			}
 
-			// BRISA
+			// BRISA (Igual que el monstruo)
 			if (entorno_brisa) {
-				// Marcar casilla como brisa
-				// Intentar inferir la posición del precipicio
-				// Si no se ha podido, marcar las posibles posiciones del percipicio
+				if (mapa[casilla_y][casilla_x] == null) {
+					if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
+						mapa[casilla_y][casilla_x] = new boolean[Percepcion.values().length];
+						mapa[casilla_y][casilla_x][posPBrisa] = true;
+					}
+				} else {
+					if (mapa[casilla_y][casilla_x][posPBrisa] == true) {
+						mapa[casilla_y][casilla_x][posBrisa] = true;
+					}
+				}
+			} else {
+				// Si no se ha percibido hedor en la casilla actual, evaluar las casillas con posibles monstruos
+				if (mapa[casilla_y][casilla_x] != null) {
+					// Si se he detectado un posible monstruo y no hay hedor en las casillas adyacentes, es seguro decir
+					// que no hay monstruo
+					if (mapa[casilla_y][casilla_x][posPBrisa] == true) {
+						mapa[casilla_y][casilla_x] = null;
+					}
+				}
 			}
 
 			// RESPLANDOR
 			if (entorno_resplandor) {
-
+				tesoro_encontrado = true;
 			}
 		}
 
@@ -137,30 +165,34 @@ public class Agente implements Ciclico {
 		 * 2. REALIZAR ACCIÓN CON LA BC Y LAS PERCEPCIONES ACTUALES
 		 *
 		 */
-		Movimiento posible_accion = null;
-		for (int i = 0; i < offset.length; i++) {
-			int casilla_y = getY() + offset[i][0];
-			int casilla_x = getX() + offset[i][1];
+		// Si se se ha encontrado el tesoro
+		if (tesoro_encontrado) {
+			accion = pila_mov.pop();
+		} else {
+			Movimiento posible_accion = null;
+			for (int i = 0; i < offset.length; i++) {
+				int casilla_y = getY() + offset[i][0];
+				int casilla_x = getX() + offset[i][1];
 
-			// Comprobar que la casilla no sea una pared
-			if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
-				if (mapa[casilla_y][casilla_x] == null) {
-					// Ir hacia la casilla vacía
-					posible_accion = Movimiento.values()[i];
+				// Comprobar que la casilla no sea una pared
+				if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
+					if (mapa[casilla_y][casilla_x] == null) {
+						// Ir hacia la casilla vacía
+						posible_accion = Movimiento.values()[i];
+					}
 				}
 			}
-		}
 
-		// Ir hacia la casilla vacía
-		if (posible_accion != null) {
-			accion = posible_accion;
-			// Guardar en la pila la acción contraria
-			pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
-		} else {
-			// Volver atrás
-			accion = pila_mov.pop();
+			// Ir hacia la casilla vacía
+			if (posible_accion != null) {
+				accion = posible_accion;
+				// Guardar en la pila la acción contraria
+				pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
+			} else {
+				// Volver atrás
+				accion = pila_mov.pop();
+			}
 		}
-
 		accionpp = accionp;
 		accionp = accion;
 	}
@@ -231,6 +263,12 @@ public class Agente implements Ciclico {
 					} else if (mapa[i][j][Percepcion.POSIBLE_MONSTRUO.ordinal()]) {
 						g.setColor(COLOR_POSIBLEMONSTRUO);
 						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+					} else if (mapa[i][j][Percepcion.POSIBLE_PRECIPICIO.ordinal()]) {
+						g.setColor(COLOR_POSIBLEPRECIPICIO);
+						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+					}  else if (mapa[i][j][Percepcion.PRECIPICIO.ordinal()]) {
+						g.setColor(new Color(0, 0, 0, 255));
+						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
 					} else {
 						g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
 						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
@@ -275,4 +313,15 @@ public class Agente implements Ciclico {
 		return accionp;
 	}
 
+	public boolean isTesoroEncontrado() {
+		return tesoro_encontrado;
+	}
+	
+	public int getStartX() {
+		return STARTX;
+	}
+	
+	public int getStartY() {
+		return STARTY;
+	}
 }
