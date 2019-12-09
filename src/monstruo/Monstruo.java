@@ -67,7 +67,7 @@ public class Monstruo {
 			// CONSTRUCCIÓN E INICIALIZACIÓN DE LA INTERFAZ GRÁFICA //
 			// El agente inicialmente está parado
 			isMoving = false;
-			Entorno jpEntorno = new Entorno(atlas, 10, 10);
+			Entorno jpEntorno = new Entorno(atlas, 6, 6);
 
 			// Evento del entorno (click)
 			jpEntorno.addMouseListener(new MouseListener() {
