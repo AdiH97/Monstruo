@@ -1,0 +1,8 @@
+CÁLCULO PERCEPCIONES:
+monstruo_{i-1,j} v monstruo_{i,j+1} v monstruo_{i+1,j} v monstruo_{i,j-1} => hedor
+precipicio_{i-1,j} v precipicio_{i,j+1} v precipicio_{i+1,j} v precipicio_{i,j-1} => brisa
+tesoro_{i,j} => replandor
+(A_{t-1} = norte ^ muro_{i-1,j}) ^ (A_{t-1} = este ^ muro_{i,j+1})
+^ (A_{t-1} = sud ^ muro_{i+1,j}) ^ (A_{t-1} = oeste ^ muro_{i,j-1}) => golpe
+
+CÁLCULO ESTADO INTERNO:
