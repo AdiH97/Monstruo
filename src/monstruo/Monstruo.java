@@ -1,7 +1,5 @@
 package monstruo;
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -37,39 +35,309 @@ public class Monstruo {
 	private static final String TITLE = "Monstruo",
 			STOP = "Parar robot",
 			START = "Iniciar robot",
-			VIEW_PERC = "Ver percepciones",
-			NVIEW_PERC = "Ocultar percepciones";
+			VIEW_PERC = "Ver percepciones";
 
+	// Separación entre los paneles de la ventana
 	private static final int PADDING = 25;
+
+	// Valores máximos y mínimos del slider/animación
 	private static final int MIN_TICK = 60;
 	private static final int MAX_TICK = 720;
+
+	// Tamaño de los iconos
 	private static final int ICON_SIZE = 30;
 
-	private static int framerate = 60;
+	// Valor del slider / espera entre ciclos
+	private static int framerate = MIN_TICK;
+
+	// Indica si el agente se puede mover
 	private static boolean isMoving;
+
+	// Indicar si se puede añadir/quitar paredes/agentes
 	private static boolean canPaint = false;
 	private static boolean canAddAgente = false;
 	private static boolean canRemoveAgente = false;
 	private static boolean canAddPared = true;
 	private static boolean canRemovePared = false;
+
+	// Indica si se pueden pintar las percepciones del agente
 	private static boolean viewPercep = false;
 
 	public static void main(String[] args) {
 
 		try {
-			// ADQUISICIÓN DE RECURSOS //
+			/**
+			 * *********************************************************************************************************
+			 * INICIALIZACIÓN DE COMPONENTES
+			 * *********************************************************************************************************
+			 */
+
+			/**
+			 * PARTE UI. *
+			 */
 			// Establecemos como apariencia de la ventana la del sistema operativo
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-			// Cargamos la imagen del atlas de texturas
-			final Atlas atlas = new Atlas("./res/atlas.png", 32, 32);
+			// Crear iconos de añadir y eliminar paredes
+			ImageIcon icon_pencil = new ImageIcon(new ImageIcon("./res/pencil.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_eraser = new ImageIcon(new ImageIcon("./res/eraser.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_add = new ImageIcon(new ImageIcon("./res/add.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_remove = new ImageIcon(new ImageIcon("./res/remove.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
 
-			// CONSTRUCCIÓN E INICIALIZACIÓN DE LA INTERFAZ GRÁFICA //
+			// Crear ventana
+			JFrame jfVentana = new JFrame(TITLE);
+
+			// Crear panel de debug
+			JPanel jpControl = new JPanel();
+
+			// Crear panel de herramientas
+			JPanel jpTools = new JPanel();
+
+			// Crear labels
+			JLabel jlAccionp = new JLabel("Acción anterior: "),
+					jlAccion = new JLabel("Acción actual: "),
+					jlWp = new JLabel("Vector anterior: "),
+					jlW = new JLabel("Vector actual: "),
+					jlCount = new JLabel("w0     w1    w2    w3    w4    w5    w6    w7");
+
+			// Crear campos de texto
+			JTextField jtfAccionp = new JTextField(25),
+					jtfAccion = new JTextField(25),
+					jtfW = new JTextField(25),
+					jtfWp = new JTextField(25);
+
+			// Crear botón de parada
+			JButton jbMoving = new JButton(START),
+					jbPercep = new JButton(VIEW_PERC),
+					// Botones con iconos
+					jbAddWall = new JButton("Añadir paredes", icon_pencil),
+					jbRemoveWall = new JButton("Eliminar paredes", icon_eraser),
+					jbAddAgent = new JButton("Añadir agentes", icon_add),
+					jbRemoveAgent = new JButton("Eliminar agentes", icon_remove);
+
+			// Crear slider (control del límite de ticks)
+			JSlider jslTicks = new JSlider(0, MIN_TICK, MAX_TICK, framerate);
+
+			// Bordes del panel de Debug (añadir el padding a los cuatro lados)
+			EmptyBorder ebPadding = new EmptyBorder(PADDING, PADDING, PADDING, PADDING);
+			Border ebLowered = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+
+			// Títulos de los bordes
+			TitledBorder tbTools = new TitledBorder(ebLowered, "Herramientas");
+			TitledBorder tbControl = new TitledBorder(ebLowered, "Variables del agente");
+
+			// Constantes del layout de la ventana (GridBagLayout)
+			GridBagConstraints gbc = new GridBagConstraints();
+
+			/**
+			 * PARTE LÓGICA.
+			 */
+			final Atlas atlas = new Atlas("./res/atlas.png", 32, 32);
+			Entorno jpEntorno = new Entorno(atlas, 10, 10);
+
+			/**
+			 * *********************************************************************************************************
+			 * ESTABLECER LAS PROPIEDADES DE LOS COMPONENTES
+			 * *********************************************************************************************************
+			 */
+			/**
+			 * PARTE GRÁFICA. *
+			 */
+			// No se puede modificar el texto de los campos de texto
+			jtfAccionp.setEditable(false);
+			jtfAccion.setEditable(false);
+			jtfWp.setEditable(false);
+			jtfW.setEditable(false);
+
+			// Personalizar slider
+			jslTicks.setPaintTrack(true);		// Línea
+			jslTicks.setPaintTicks(true);		// Marcas de ticks
+			jslTicks.setPaintLabels(true);		// Texto de los ticks
+			jslTicks.setMajorTickSpacing(120);	// Espacios entre ticks
+			jslTicks.setMinorTickSpacing(120);
+
+			// Añadir los bordes con títulos al panel correspondiente
+			jpTools.setBorder(new CompoundBorder(ebPadding, tbTools));
+			jpControl.setBorder(new CompoundBorder(ebPadding, tbControl));
+
+			// Añadir botones al panel de herramientas
+			jpTools.add(jbAddWall);
+			jpTools.add(jbRemoveWall);
+			jpTools.add(jbAddAgent);
+			jpTools.add(jbRemoveAgent);
+
+			// Añadir labels y campos de texto al panel de debug
+			jpControl.add(jlAccionp);
+			jpControl.add(jtfAccionp);
+			jpControl.add(jlWp);
+			jpControl.add(jtfWp);
+			jpControl.add(jlAccion);
+			jpControl.add(jtfAccion);
+			jpControl.add(jlW);
+			jpControl.add(jtfW);
+			jpControl.add(jbMoving);
+			jpControl.add(jbPercep);
+			jpControl.add(jslTicks);
+
+			// Establecer el layout del panel de herramientas (GroupLayout)
+			GroupLayout tools_layout = new GroupLayout(jpTools);
+			jpTools.setLayout(tools_layout);
+			tools_layout.setAutoCreateGaps(true);
+			tools_layout.setAutoCreateContainerGaps(true);
+
+			// Establecer el layout del panel de Debug (GroupLayout)
+			GroupLayout db_layout = new GroupLayout(jpControl);
+			jpControl.setLayout(db_layout);
+			db_layout.setAutoCreateGaps(true);
+			db_layout.setAutoCreateContainerGaps(true);
+
+			/**
+			 * LAYOUTS. *
+			 * 
+			 * Para que los layouts tengan efecto, se tienen que definir antes que el layout de la ventana principal.
+			 * 
+			 * En los layouts debe haber una correspondencia entre los elementos horizontales y verticales (dos
+			 * elementos que están en la misma posición en dos columnas diferentes estáran en la misma fila).
+			 */
+			// Horizontal (los elementos estarán centrados)
+			tools_layout.setHorizontalGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+					// 1 grupo padre
+					.addGroup(tools_layout.createSequentialGroup()
+							// 1a columna
+							.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
+									.addComponent(jbAddWall)
+									.addComponent(jbAddAgent)
+							)
+							// Separador
+							.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+							// 2a columna
+							.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
+									.addComponent(jbRemoveWall)
+									.addComponent(jbRemoveAgent)
+							)
+					)
+			);
+			// Vertical
+			tools_layout.setVerticalGroup(tools_layout.createSequentialGroup()
+					// 2 grupos padre (filas)
+					.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jbAddWall)
+							.addComponent(jbRemoveWall)
+					)
+					.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jbAddAgent)
+							.addComponent(jbRemoveAgent)
+					)
+			);
+
+			/* Ordenar los elementos del panel */
+			// Horizontal (los elementos estarán centrados)
+			db_layout.setHorizontalGroup(db_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+					// 2 grupos padres y un elemento
+
+					// 1r grupo
+					.addGroup(db_layout.createSequentialGroup()
+							// 1a columna
+							.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
+									.addComponent(jlW)
+									.addComponent(jlWp)
+									.addComponent(jlAccion)
+									.addComponent(jlAccionp)
+							)
+							// Separador
+							.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+							// 2a columna
+							.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
+									.addComponent(jlCount)
+									.addComponent(jtfW)
+									.addComponent(jtfWp)
+									.addComponent(jtfAccion)
+									.addComponent(jtfAccionp)
+							)
+					)
+					// 2o grupo
+					.addGroup(db_layout.createSequentialGroup()
+							// No están dividos por columnas porque interesa que estén centrados (propiedad global)
+							.addComponent(jbMoving)
+							.addComponent(jbPercep)
+					)
+					// Componente (también centrado por la propiedad global)
+					.addComponent(jslTicks)
+			);
+			// Vertical
+			db_layout.setVerticalGroup(db_layout.createSequentialGroup()
+					// 6 grupos padre (filas) y un elemento
+					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jlCount)
+					)
+					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jlWp)
+							.addComponent(jtfWp)
+					)
+					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jlW)
+							.addComponent(jtfW)
+					)
+					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jlAccionp)
+							.addComponent(jtfAccionp)
+					)
+					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jlAccion)
+							.addComponent(jtfAccion)
+					)
+					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+							.addComponent(jbMoving)
+							.addComponent(jbPercep)
+					)
+					.addComponent(jslTicks)
+			);
+			
+			
+			// Establecer la forma del layout de la ventana
+			jfVentana.setLayout(new GridBagLayout());
+
+			// Celda 0, 0 (Entorno)
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			// Ocupará 2 celdas verticales
+			gbc.gridheight = 2;
+			jfVentana.add(jpEntorno, gbc); // Añadir el entorno con las constantes definidas
+
+			// Celda 1, 0 (Panel de herramientas)
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			// Parte superior de la ventana
+			gbc.anchor = GridBagConstraints.PAGE_START;
+			jfVentana.add(jpTools, gbc);
+
+			// Celda 1, 1 (Panel de ebug)
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			// Parte central de la ventana
+			gbc.anchor = GridBagConstraints.PAGE_END;
+			jfVentana.add(jpControl, gbc);
+
+			// Establecer las propiedas de la ventana
+			jfVentana.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			jfVentana.pack();
+			jfVentana.setLocationRelativeTo(null);
+			jfVentana.setAlwaysOnTop(true);
+			jfVentana.setVisible(true);
+
+
+			/**
+			 * PARTE LÓGICA. *
+			 */
 			// El agente inicialmente está parado
 			isMoving = false;
-			Entorno jpEntorno = new Entorno(atlas, 6, 6);
 
-			// Evento del entorno (click)
+			/**
+			 * *********************************************************************************************************
+			 * EVENTOS
+			 * *********************************************************************************************************
+			 */
+			// Evento del panel del entorno
 			jpEntorno.addMouseListener(new MouseListener() {
 				// Pintar/Borrar pared
 				@Override
@@ -124,7 +392,7 @@ public class Monstruo {
 				}
 			});
 
-			// Evento del entorno (arrastrar ratón)
+			// Evento del panel del entorno (arrastrar ratón)
 			jpEntorno.addMouseMotionListener(new MouseMotionListener() {
 
 				// Pintar/Borrar paredes mientras se mantega pulsado el botón izquierdo
@@ -149,70 +417,12 @@ public class Monstruo {
 				@Override
 				public void mouseMoved(MouseEvent e) {
 				}
-			});			// Crear iconos de añadir y eliminar paredes
-			ImageIcon icon_pencil = new ImageIcon(new ImageIcon("./res/pencil.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-			ImageIcon icon_eraser = new ImageIcon(new ImageIcon("./res/eraser.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-			ImageIcon icon_add = new ImageIcon(new ImageIcon("./res/add.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-			ImageIcon icon_remove = new ImageIcon(new ImageIcon("./res/remove.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-
-			// Crear ventana
-			JFrame jfVentana = new JFrame(TITLE);
-
-			// Crear panel de debug
-			JPanel jpControl = new JPanel();
-
-			// Crear panel de herramientas
-			JPanel jpTools = new JPanel();
-
-			// Crear labels
-			JLabel jlAccionp = new JLabel("Acción anterior: "),
-					jlAccion = new JLabel("Acción actual: "),
-					jlWp = new JLabel("Vector anterior: "),
-					jlW = new JLabel("Vector actual: "),
-					jlCount = new JLabel("w0     w1    w2    w3    w4    w5    w6    w7");
-
-			// Crear campos de texto
-			JTextField jtfAccionp = new JTextField(25),
-					jtfAccion = new JTextField(25),
-					jtfW = new JTextField(25),
-					jtfWp = new JTextField(25);
-
-			// Crear botón de parada
-			JButton jbMoving = new JButton(START),
-					jbPercep = new JButton(VIEW_PERC),
-					jbAddWall = new JButton("Añadir paredes", icon_pencil),
-					jbRemoveWall = new JButton("Eliminar paredes", icon_eraser),
-					jbAddAgent = new JButton("Añadir agentes", icon_add),
-					jbRemoveAgent = new JButton("Eliminar agentes", icon_remove);
-
-			// Botón de añadir paredes seleccionado por defecto
-			jbAddWall.setEnabled(false);
-
-			// Crear slider (control del límite de ticks)
-			JSlider jslTicks = new JSlider(0, MIN_TICK, MAX_TICK, framerate);
-
-			// No se puede modificar el texto de los campos de texto
-			jtfAccionp.setEditable(false);
-			jtfAccion.setEditable(false);
-			jtfWp.setEditable(false);
-			jtfW.setEditable(false);
-
-			// Personalizar slider
-			jslTicks.setPaintTrack(true);     // Línea
-			jslTicks.setPaintTicks(true);     // Marcas de ticks
-			jslTicks.setPaintLabels(true);    // Texto de los ticks
-			jslTicks.setMajorTickSpacing(120); // Espacios entre ticks
-			jslTicks.setMinorTickSpacing(120);
-			jslTicks.addChangeListener((ChangeEvent cl) -> {
-				// Cuando se cambia el valor del slider, cambia el valor del 
-				// límite de ticks
-				framerate = jslTicks.getValue();
 			});
 
-			// Establecer foco
-			jbMoving.setFocusable(true);
-			jbMoving.requestFocus();
-			jbMoving.grabFocus();
+			// Cambiar el valor del framerate con el cambio de valor del slider
+			jslTicks.addChangeListener((ChangeEvent cl) -> {
+				framerate = jslTicks.getValue();
+			});
 
 			// Parar o iniciar robot
 			jbMoving.addActionListener((ActionEvent ae) -> {
@@ -280,156 +490,11 @@ public class Monstruo {
 				canRemoveAgente = true;
 			});
 
-			// Bordes del panel de Debug
-			EmptyBorder ebPadding = new EmptyBorder(PADDING, PADDING, PADDING, PADDING);
-			Border ebLowered = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-
-			TitledBorder tbTools = new TitledBorder(ebLowered, "Herramientas");
-			TitledBorder tbControl = new TitledBorder(ebLowered, "Variables del agente");
-
-			jpTools.setBorder(new CompoundBorder(ebPadding, tbTools));
-			jpControl.setBorder(new CompoundBorder(ebPadding, tbControl));
-
-			// Añadir iconos al panel de herramientas
-			jpTools.add(jbAddWall);
-			jpTools.add(jbRemoveWall);
-			jpTools.add(jbAddAgent);
-			jpTools.add(jbRemoveAgent);
-
-			// Añadir labels y campos de texto al panel de debug
-			jpControl.add(jlAccionp);
-			jpControl.add(jtfAccionp);
-			jpControl.add(jlWp);
-			jpControl.add(jtfWp);
-			jpControl.add(jlAccion);
-			jpControl.add(jtfAccion);
-			jpControl.add(jlW);
-			jpControl.add(jtfW);
-			jpControl.add(jbMoving);
-			jpControl.add(jbPercep);
-			jpControl.add(jslTicks);
-
-			// Establecer el layout del panel de herramientas
-			GroupLayout tools_layout = new GroupLayout(jpTools);
-			jpTools.setLayout(tools_layout);
-			tools_layout.setAutoCreateGaps(true);
-			tools_layout.setAutoCreateContainerGaps(true);
-
-			// Ordenar los elementos del panel
-			tools_layout.setHorizontalGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					.addGroup(tools_layout.createSequentialGroup()
-							.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-									.addComponent(jbAddWall)
-									.addComponent(jbAddAgent)
-							)
-							.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-							.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-									.addComponent(jbRemoveWall)
-									.addComponent(jbRemoveAgent)
-							)
-					)
-			);
-			tools_layout.setVerticalGroup(tools_layout.createSequentialGroup()
-					.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jbAddWall)
-							.addComponent(jbRemoveWall)
-					)
-					.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jbAddAgent)
-							.addComponent(jbRemoveAgent)
-					)
-			);
-
-			// Establecer el layout del panel de Debug
-			GroupLayout db_layout = new GroupLayout(jpControl);
-			jpControl.setLayout(db_layout);
-			db_layout.setAutoCreateGaps(true);
-			db_layout.setAutoCreateContainerGaps(true);
-
-			// Ordenar los elementos del panel
-			db_layout.setHorizontalGroup(db_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					.addGroup(db_layout.createSequentialGroup()
-							.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-									.addComponent(jlW)
-									.addComponent(jlWp)
-									.addComponent(jlAccion)
-									.addComponent(jlAccionp)
-							)
-							.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-							.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-									.addComponent(jlCount)
-									.addComponent(jtfW)
-									.addComponent(jtfWp)
-									.addComponent(jtfAccion)
-									.addComponent(jtfAccionp)
-							)
-					)
-					.addGroup(db_layout.createSequentialGroup()
-							.addComponent(jbMoving)
-							.addComponent(jbPercep)
-					)
-					.addComponent(jslTicks)
-			);
-			db_layout.setVerticalGroup(db_layout.createSequentialGroup()
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlCount)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlWp)
-							.addComponent(jtfWp)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlW)
-							.addComponent(jtfW)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlAccionp)
-							.addComponent(jtfAccionp)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlAccion)
-							.addComponent(jtfAccion)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jbMoving)
-							.addComponent(jbPercep)
-					)
-					.addComponent(jslTicks)
-			);
-
-			// Establecer las propiedas de la ventana
-			GridBagConstraints gbc = new GridBagConstraints();
-
-			jfVentana.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-			jfVentana.setLayout(new GridBagLayout());
-
-			// Celda 0, 0
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			// Ocupará 2 celdas verticales
-			gbc.gridheight = 2;
-			jfVentana.add(jpEntorno, gbc); // Constantes por defecto
-
-			// Celda 1, 0
-			gbc.gridx = 1;
-			gbc.gridy = 0;
-			// Parte superior de la ventana
-			gbc.anchor = GridBagConstraints.PAGE_START;
-			jfVentana.add(jpTools, gbc);
-
-			// Celda 1, 1
-			gbc.gridx = 1;
-			gbc.gridy = 1;
-			// Parte central de la ventana
-			gbc.anchor = GridBagConstraints.PAGE_END;
-			jfVentana.add(jpControl, gbc);
-
-			jfVentana.pack();
-			jfVentana.setLocationRelativeTo(null);
-			jfVentana.setAlwaysOnTop(true);
-			jfVentana.setVisible(true);
-
-			// BUCLE PRINCIPAL //
+			/**
+			 * *********************************************************************************************************
+			 * BUCLE PRINCIPAL
+			 * *********************************************************************************************************
+			 */
 			long time = System.nanoTime() / 1000000;
 			while (true) {
 
