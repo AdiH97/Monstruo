@@ -4,7 +4,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import javax.swing.JPanel;
-import monstruo.Agente.Movimiento;
+import monstruo.Agente.Accion;
 import monstruo.Agente.Percepcion;
 
 public class Entorno extends JPanel implements Ciclico {
@@ -53,11 +53,12 @@ public class Entorno extends JPanel implements Ciclico {
 
 		// cosas puestas a mano, QUITAR LUEGO
 		mapa[2][1] = Elemento.MONSTRUO;
-		mapa[2][2] = Elemento.TESORO;
+		mapa[2][2] = Elemento.MONSTRUO;
 		mapa[2][3] = Elemento.PRECIPICIO;
 		mapa[1][4] = Elemento.PRECIPICIO;
 		mapa[4][3] = Elemento.PRECIPICIO;
-		agentes[0] = new Agente(atlas, ATLAS_AMARILLO, filas, columnas, 1, 4);
+		mapa[7][7] = Elemento.TESORO;
+		agentes[0] = new Agente(atlas, ATLAS_AMARILLO, filas, columnas, 1, 1);
 	}
 
 	// 3 funciones auxiliares para el mapa que a lo mejor estaría bien meter en una clase //
@@ -72,7 +73,8 @@ public class Entorno extends JPanel implements Ciclico {
 	private ArrayList<Elemento> casillasAdyacentes(Elemento[][] mapa, int X, int Y) {
 		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 		ArrayList<Elemento> res = new ArrayList<>();
-		for (Movimiento m : Movimiento.values()) {
+		for (int i = 0; i < 4; i++) {
+			Accion m = Accion.values()[i];
 			if (mapa[Y + offset[m.ordinal()][0]][X + offset[m.ordinal()][1]] != null) {
 				res.add(mapa[Y + offset[m.ordinal()][0]][X + offset[m.ordinal()][1]]);
 			}
@@ -80,7 +82,7 @@ public class Entorno extends JPanel implements Ciclico {
 		return res;
 	}
 
-	private Elemento casillaSiguiente(Elemento[][] mapa, int X, int Y, Movimiento accion) {
+	private Elemento casillaSiguiente(Elemento[][] mapa, int X, int Y, Accion accion) {
 		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 		if (mapa[Y + offset[accion.ordinal()][0]][X + offset[accion.ordinal()][1]] != null) {
 			return mapa[Y + offset[accion.ordinal()][0]][X + offset[accion.ordinal()][1]];
@@ -97,10 +99,30 @@ public class Entorno extends JPanel implements Ciclico {
 			// posición del agente //
 			int X = agente.getX();
 			int Y = agente.getY();
+			
+			int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 
 			if (!(agente.isTesoroEncontrado() && X == agente.getStartX() && Y == agente.getStartY())) {
 
 				if (ciclos % 32 == 0) {
+
+					// posición del agente y última acción del agente //
+					Accion accionp = agente.getAccionp();
+
+					// processar disparos
+					if (accionp.ordinal() >= 4) {
+						int balaX = X;
+						int balaY = Y;
+						while (balaY > 0 && balaY < filas - 1 && balaX > 0 && balaX < columnas - 1
+							   && mapa[balaY][balaX] != Elemento.MONSTRUO) {
+							balaX += offset[accionp.ordinal() % 4][1];
+							balaY += offset[accionp.ordinal() % 4][0];
+							if (mapa[balaY][balaX] == Elemento.MONSTRUO) {
+								mapa[balaY][balaX] = null;
+								break;
+							}
+						}
+					}
 
 					// lista de percepciones a enviar al agente y sus índices //
 					boolean[] P = new boolean[4];
@@ -109,13 +131,12 @@ public class Entorno extends JPanel implements Ciclico {
 					final int RESPLANDOR = Percepcion.RESPLANDOR.ordinal();
 					final int GOLPE = Percepcion.GOLPE.ordinal();
 
-					// posición del agente y última acción del agente //
-					Movimiento accionp = agente.getAccionp();
+					
 
 					P[HEDOR] = casillasAdyacentes(mapa, X, Y).contains(Elemento.MONSTRUO);
 					P[BRISA] = casillasAdyacentes(mapa, X, Y).contains(Elemento.PRECIPICIO);
 					P[RESPLANDOR] = (casilla(mapa, X, Y) == Elemento.TESORO);
-					P[GOLPE] = (casillaSiguiente(mapa, X, Y, accionp) == Elemento.MURO);
+					P[GOLPE] = accionp.ordinal() < 4 && (casillaSiguiente(mapa, X, Y, accionp) == Elemento.MURO);
 
 					// Enviar percepciones
 					agente.setW(P);
