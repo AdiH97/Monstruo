@@ -21,7 +21,7 @@ public class Agente implements Ciclico {
 	private boolean w[];
 
 	private boolean tesoro_encontrado;
-	
+
 	private final int STARTX, STARTY;
 
 	protected enum Percepcion {
@@ -57,7 +57,7 @@ public class Agente implements Ciclico {
 		accion = accionp = Accion.NORTE;
 		pila_mov = new Stack();
 		tesoro_encontrado = false;
-		
+
 		STARTX = x;
 		STARTY = y;
 	}
@@ -187,7 +187,9 @@ public class Agente implements Ciclico {
 			if (posible_accion != null) {
 				accion = posible_accion;
 				// Guardar en la pila la acción contraria
-				pila_mov.push(Accion.values()[(accion.ordinal() + 2) % Accion.values().length]);
+				if (accion.ordinal() < 4) {
+					pila_mov.push(Accion.values()[(accion.ordinal() + 2) % 4]);
+				}
 			} else {
 				// Intentamos disparar
 				boolean disparado = false;
@@ -195,14 +197,14 @@ public class Agente implements Ciclico {
 					// pos Monstruo y PosibleMonstruo
 					int row = getY() + offset[ii][0];
 					int col = getX() + offset[ii][1];
-					
+
 					// si no hemos disparado ya en esa dirección y hay un M. o P.M. allí pues
 					// disparamos
 					if (mapa[getY()][getX()] != null
-					&& !mapa[getY()][getX()][Percepcion.DN.ordinal() + ii]
-					&& mapa[row][col] != null
-					&& (mapa[row][col][Percepcion.MONSTRUO.ordinal()]
-						|| mapa[row][col][Percepcion.POSIBLE_MONSTRUO.ordinal()])) {
+						&& !mapa[getY()][getX()][Percepcion.DN.ordinal() + ii]
+						&& mapa[row][col] != null
+						&& (mapa[row][col][Percepcion.MONSTRUO.ordinal()]
+							|| mapa[row][col][Percepcion.POSIBLE_MONSTRUO.ordinal()])) {
 						accion = Accion.values()[4 + ii];
 						mapa[getY()][getX()][Percepcion.DN.ordinal() + ii] = true;
 						disparado = true;
@@ -213,12 +215,11 @@ public class Agente implements Ciclico {
 					// Volver atrás
 					accion = pila_mov.pop();
 				}
-				
+
 			}
 		}
 		accionpp = accionp;
 		accionp = accion;
-		System.err.println(accion);
 	}
 
 	@Override
@@ -228,15 +229,19 @@ public class Agente implements Ciclico {
 				// animación
 				switch (accion) {
 					case NORTE:
+					case DN:
 						gfxDireccion = 1 * 512 / gfxAtlas.getSubancho();
 						break;
 					case ESTE:
+					case DE:
 						gfxDireccion = 2 * 512 / gfxAtlas.getSubancho();
 						break;
 					case SUD:
+					case DS:
 						gfxDireccion = 0 * 512 / gfxAtlas.getSubancho();
 						break;
 					case OESTE:
+					case DO:
 						gfxDireccion = 3 * 512 / gfxAtlas.getSubancho();
 						break;
 				}
@@ -288,7 +293,7 @@ public class Agente implements Ciclico {
 					} else if (mapa[i][j][Percepcion.POSIBLE_PRECIPICIO.ordinal()]) {
 						g.setColor(COLOR_POSIBLEPRECIPICIO);
 						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
-					}  else if (mapa[i][j][Percepcion.PRECIPICIO.ordinal()]) {
+					} else if (mapa[i][j][Percepcion.PRECIPICIO.ordinal()]) {
 						g.setColor(new Color(0, 0, 0, 255));
 						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
 					} else {
@@ -304,7 +309,7 @@ public class Agente implements Ciclico {
 		if (w[Percepcion.GOLPE.ordinal()]) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gfxAtlas.pintarTexturaEscala(g, getX() * gfxAtlas.getSubancho() + offset[accionpp.ordinal()][0],
-					getY() * gfxAtlas.getSubalto() + offset[accionpp.ordinal()][1], 2, escala);
+										 getY() * gfxAtlas.getSubalto() + offset[accionpp.ordinal()][1], 2, escala);
 		}
 	}
 
@@ -338,11 +343,11 @@ public class Agente implements Ciclico {
 	public boolean isTesoroEncontrado() {
 		return tesoro_encontrado;
 	}
-	
+
 	public int getStartX() {
 		return STARTX;
 	}
-	
+
 	public int getStartY() {
 		return STARTY;
 	}

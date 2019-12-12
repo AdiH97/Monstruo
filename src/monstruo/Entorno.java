@@ -54,6 +54,8 @@ public class Entorno extends JPanel implements Ciclico {
 		// cosas puestas a mano, QUITAR LUEGO
 		mapa[2][1] = Elemento.MONSTRUO;
 		mapa[2][2] = Elemento.MONSTRUO;
+		mapa[4][1] = Elemento.MONSTRUO;
+		mapa[3][2] = Elemento.MONSTRUO;
 		mapa[2][3] = Elemento.PRECIPICIO;
 		mapa[1][4] = Elemento.PRECIPICIO;
 		mapa[4][3] = Elemento.PRECIPICIO;
@@ -142,6 +144,8 @@ public class Entorno extends JPanel implements Ciclico {
 					agente.setW(P);
 
 					agente.calcularAccion();
+				} else {
+					mapa[Y][X] = null;
 				}
 
 				agente.ciclo();
