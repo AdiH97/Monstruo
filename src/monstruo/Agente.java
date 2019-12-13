@@ -334,4 +334,12 @@ public class Agente implements Ciclico {
 	public void setVerPercep(boolean b) {
 		verPercep = b;
 	}
+	
+	public boolean[][][] getMapa() {
+		return mapa;
+	}
+	
+	public boolean[] getW() {
+		return w;
+	}
 }

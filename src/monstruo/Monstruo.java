@@ -97,6 +97,7 @@ public class Monstruo {
 
 			// Crear panel de debug
 			JPanel jpControl = new JPanel();
+			
 
 			// Crear panel de herramientas
 			JPanel jpTools = new JPanel();
@@ -147,6 +148,9 @@ public class Monstruo {
 			 */
 			final Atlas atlas = new Atlas("./res/atlas.png", 32, 32);
 			Entorno jpEntorno = new Entorno(atlas, 10, 10);
+			
+			// TODO Unir ambos paneles
+			PanelDebug pd = new PanelDebug(jpEntorno.getAgentes().get(0));
 
 			/**
 			 * *********************************************************************************************************
@@ -257,7 +261,13 @@ public class Monstruo {
 			gbc_db.gridheight = 1;
 			gbc_db.gridwidth = 3;
 			jpControl.add(jslTicks, gbc_db);
-
+			
+			gbc_db.gridx = 1;
+			gbc_db.gridy = 2;
+			gbc_db.gridheight = 1;
+			gbc_db.gridwidth = 3;
+			jpControl.add(pd, gbc_db);
+			
 			/**
 			 * Layout de la ventana principal *
 			 */

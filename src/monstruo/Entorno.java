@@ -288,4 +288,8 @@ public class Entorno extends JPanel implements Ciclico {
 	public int getCiclos() {
 		return ciclos;
 	}
+	
+	public ArrayList<Agente> getAgentes() {
+		return agentes;
+	}
 }
