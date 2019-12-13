@@ -1,0 +1,44 @@
+CÁLCULO ESTADO INTERNO:
+
+C   = casilla_visitada
+PM  = posible_monstruo
+H   = hedor
+R   = resplandor
+T   = tesoro
+A   = accion
+PA  = posible_accion
+
+/* 1. INFERIR */
+golpe{i, j} => prohibido = A_{t-1}
+
+// Hedor y brisa
+H_{i, j} ^ NILC_{i-1, j} ^ !muro_{i-1, j} => PW_{i-1, j}
+H_{i, j} ^ NILC_{i, j+1} ^ !muro_{i, j+1} => PW_{i, j+1}
+H_{i, j} ^ NILC_{i+1, j} ^ !muro_{i+1, j} => PW_{i+1, j}
+H_{i, j} ^ NILC_{i, j-1} ^ !muro_{i, j-1} => PW_{i, j-1}
+
+H_{i, j} ^ C_{i-1, j} ^ PM_{i-1, j} => W_{i-1, j}
+H_{i, j} ^ C_{i+1, j} ^ PM_{i+1, j} => W_{i+1, j}
+H_{i, j} ^ C_{i, j-1} ^ PM_{i, j-1} => W_{i, j-1}
+H_{i, j} ^ C_{i, j+1} ^ PM_{i, j+1} => W_{i, j+1}
+
+NILH_{i, j} ^ C_{i-1, j} ^ PM_{i-1, j} => NILC_{i-1, j}
+NILH_{i, j} ^ C_{i+1, j} ^ PM_{i+1, j} => NILC_{i+1, j}
+NILH_{i, j} ^ C_{i, j-1} ^ PM_{i, j-1} => NILC_{i, j-1}
+NILH_{i, j} ^ C_{i, j+1} ^ PM_{i, j+1} => NILC_{i, j+1}
+
+R => T
+
+/* 2. REALIZAR ACCION */
+
+T => POP()
+
+NILC_{i-1, j} ^ !muro_{i-1, j} => NORTE ^ PUSH()
+NILC_{i, j+1} ^ !muro_{i, j+1} => ESTE ^ PUSH()
+NILC_{i+1, j} ^ !muro_{i+1, j} => SUR ^ PUSH()
+NILC_{i, j-1} ^ !muro_{i, j-1} => OESTE ^ PUSH()
+1 => POP()
+
+/* 3. ACTUALIZAR */
+
+A_{t-1} = A
