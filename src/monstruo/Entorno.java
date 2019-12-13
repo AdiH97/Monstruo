@@ -284,4 +284,8 @@ public class Entorno extends JPanel implements Ciclico {
 			a.setVerPercep(b);
 		}
 	}
+	
+	public int getCiclos() {
+		return ciclos;
+	}
 }

@@ -64,6 +64,9 @@ public class Monstruo {
 	// (Cambiar el color de el resto de botones al color original)
 	private ArrayList<JButton> botones = new ArrayList();
 	
+	// Booleano que indica si se realizará un paso (32 ciclos)
+	private boolean doStep = false;
+	
 	public Monstruo () {
 		
 		try {
@@ -391,10 +394,7 @@ public class Monstruo {
 			
 			// Avanzar un ciclo
 			jbStep.addActionListener((ActionEvent) ->{
-				// TODO: Definir los ciclos como variable global
-				for(int i = 0; i < 32; i++) { 
-					jpEntorno.ciclo();
-				}
+				doStep = true;
 			});
 			
 			
@@ -425,8 +425,13 @@ public class Monstruo {
 				jpEntorno.setIntegralFactor(uw, uh);
 
 				// CALCULO //
-				if (isMoving) {
+				if (isMoving || doStep) {
 					jpEntorno.ciclo();
+				}
+				
+				// Para el 'Siguiente paso' cuando hayan pasod 32 ciclos
+				if(jpEntorno.getCiclos() % 32 == 0) {
+					doStep = false;
 				}
 
 				// PINTADO //
