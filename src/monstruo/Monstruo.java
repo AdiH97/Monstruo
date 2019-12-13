@@ -33,9 +33,9 @@ import javax.swing.event.ChangeEvent;
 public class Monstruo {
 
 	private static final String TITLE = "Monstruo",
-			STOP = "Parar robot",
-			START = "Iniciar robot",
-			VIEW_PERC = "Ver percepciones";
+	 STOP = "⏯",
+	 START = "⏯",
+	 VIEW_PERC = "Ver percepciones";
 
 	// Separación entre los paneles de la ventana
 	private static final int PADDING = 25;
@@ -95,25 +95,25 @@ public class Monstruo {
 
 			// Crear labels
 			JLabel jlAccionp = new JLabel("Acción anterior: "),
-					jlAccion = new JLabel("Acción actual: "),
-					jlWp = new JLabel("Vector anterior: "),
-					jlW = new JLabel("Vector actual: "),
-					jlCount = new JLabel("w0     w1    w2    w3    w4    w5    w6    w7");
+			 jlAccion = new JLabel("Acción actual: "),
+			 jlWp = new JLabel("Vector anterior: "),
+			 jlW = new JLabel("Vector actual: "),
+			 jlCount = new JLabel("w0     w1    w2    w3    w4    w5    w6    w7");
 
 			// Crear campos de texto
 			JTextField jtfAccionp = new JTextField(25),
-					jtfAccion = new JTextField(25),
-					jtfW = new JTextField(25),
-					jtfWp = new JTextField(25);
+			 jtfAccion = new JTextField(25),
+			 jtfW = new JTextField(25),
+			 jtfWp = new JTextField(25);
 
 			// Crear botón de parada
 			JButton jbMoving = new JButton(START),
-					jbPercep = new JButton(VIEW_PERC),
-					// Botones con iconos
-					jbAddWall = new JButton("Añadir paredes", icon_pencil),
-					jbRemoveWall = new JButton("Eliminar paredes", icon_eraser),
-					jbAddAgent = new JButton("Añadir agentes", icon_add),
-					jbRemoveAgent = new JButton("Eliminar agentes", icon_remove);
+			 jbPercep = new JButton(VIEW_PERC),
+			 // Botones con iconos
+			 jbAddWall = new JButton("Añadir paredes", icon_pencil),
+			 jbRemoveWall = new JButton("Eliminar paredes", icon_eraser),
+			 jbAddAgent = new JButton("Añadir agentes", icon_add),
+			 jbRemoveAgent = new JButton("Eliminar agentes", icon_remove);
 
 			// Crear slider (control del límite de ticks)
 			JSlider jslTicks = new JSlider(0, MIN_TICK, MAX_TICK, framerate);
@@ -193,107 +193,108 @@ public class Monstruo {
 
 			/**
 			 * LAYOUTS. *
-			 * 
-			 * Para que los layouts tengan efecto, se tienen que definir antes que el layout de la ventana principal.
-			 * 
-			 * En los layouts debe haber una correspondencia entre los elementos horizontales y verticales (dos
-			 * elementos que están en la misma posición en dos columnas diferentes estáran en la misma fila).
+			 *
+			 * Para que los layouts tengan efecto, se tienen que definir antes que el layout de la
+			 * ventana principal.
+			 *
+			 * En los layouts debe haber una correspondencia entre los elementos horizontales y
+			 * verticales (dos elementos que están en la misma posición en dos columnas diferentes
+			 * estáran en la misma fila).
 			 */
 			// Horizontal (los elementos estarán centrados)
 			tools_layout.setHorizontalGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					// 1 grupo padre
-					.addGroup(tools_layout.createSequentialGroup()
-							// 1a columna
-							.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
-									.addComponent(jbAddWall)
-									.addComponent(jbAddAgent)
-							)
-							// Separador
-							.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-							// 2a columna
-							.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
-									.addComponent(jbRemoveWall)
-									.addComponent(jbRemoveAgent)
-							)
-					)
+			 // 1 grupo padre
+			 .addGroup(tools_layout.createSequentialGroup()
+			  // 1a columna
+			  .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
+			   .addComponent(jbAddWall)
+			   .addComponent(jbAddAgent)
+			  )
+			  // Separador
+			  .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+			  // 2a columna
+			  .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
+			   .addComponent(jbRemoveWall)
+			   .addComponent(jbRemoveAgent)
+			  )
+			 )
 			);
 			// Vertical
 			tools_layout.setVerticalGroup(tools_layout.createSequentialGroup()
-					// 2 grupos padre (filas)
-					.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jbAddWall)
-							.addComponent(jbRemoveWall)
-					)
-					.addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jbAddAgent)
-							.addComponent(jbRemoveAgent)
-					)
+			 // 2 grupos padre (filas)
+			 .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jbAddWall)
+			  .addComponent(jbRemoveWall)
+			 )
+			 .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jbAddAgent)
+			  .addComponent(jbRemoveAgent)
+			 )
 			);
 
 			/* Ordenar los elementos del panel */
 			// Horizontal (los elementos estarán centrados)
 			db_layout.setHorizontalGroup(db_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					// 2 grupos padres y un elemento
+			 // 2 grupos padres y un elemento
 
-					// 1r grupo
-					.addGroup(db_layout.createSequentialGroup()
-							// 1a columna
-							.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
-									.addComponent(jlW)
-									.addComponent(jlWp)
-									.addComponent(jlAccion)
-									.addComponent(jlAccionp)
-							)
-							// Separador
-							.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-							// 2a columna
-							.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
-									.addComponent(jlCount)
-									.addComponent(jtfW)
-									.addComponent(jtfWp)
-									.addComponent(jtfAccion)
-									.addComponent(jtfAccionp)
-							)
-					)
-					// 2o grupo
-					.addGroup(db_layout.createSequentialGroup()
-							// No están dividos por columnas porque interesa que estén centrados (propiedad global)
-							.addComponent(jbMoving)
-							.addComponent(jbPercep)
-					)
-					// Componente (también centrado por la propiedad global)
-					.addComponent(jslTicks)
+			 // 1r grupo
+			 .addGroup(db_layout.createSequentialGroup()
+			  // 1a columna
+			  .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
+			   .addComponent(jlW)
+			   .addComponent(jlWp)
+			   .addComponent(jlAccion)
+			   .addComponent(jlAccionp)
+			  )
+			  // Separador
+			  .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+			  // 2a columna
+			  .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
+			   .addComponent(jlCount)
+			   .addComponent(jtfW)
+			   .addComponent(jtfWp)
+			   .addComponent(jtfAccion)
+			   .addComponent(jtfAccionp)
+			  )
+			 )
+			 // 2o grupo
+			 .addGroup(db_layout.createSequentialGroup()
+			  // No están dividos por columnas porque interesa que estén centrados (propiedad global)
+			  .addComponent(jbMoving)
+			  .addComponent(jbPercep)
+			 )
+			 // Componente (también centrado por la propiedad global)
+			 .addComponent(jslTicks)
 			);
 			// Vertical
 			db_layout.setVerticalGroup(db_layout.createSequentialGroup()
-					// 6 grupos padre (filas) y un elemento
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlCount)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlWp)
-							.addComponent(jtfWp)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlW)
-							.addComponent(jtfW)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlAccionp)
-							.addComponent(jtfAccionp)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jlAccion)
-							.addComponent(jtfAccion)
-					)
-					.addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							.addComponent(jbMoving)
-							.addComponent(jbPercep)
-					)
-					.addComponent(jslTicks)
+			 // 6 grupos padre (filas) y un elemento
+			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jlCount)
+			 )
+			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jlWp)
+			  .addComponent(jtfWp)
+			 )
+			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jlW)
+			  .addComponent(jtfW)
+			 )
+			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jlAccionp)
+			  .addComponent(jtfAccionp)
+			 )
+			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jlAccion)
+			  .addComponent(jtfAccion)
+			 )
+			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+			  .addComponent(jbMoving)
+			  .addComponent(jbPercep)
+			 )
+			 .addComponent(jslTicks)
 			);
-			
-			
+
 			// Establecer la forma del layout de la ventana
 			jfVentana.setLayout(new GridBagLayout());
 
@@ -309,7 +310,7 @@ public class Monstruo {
 			gbc.gridy = 0;
 			// Parte superior de la ventana
 			gbc.anchor = GridBagConstraints.PAGE_START;
-			jfVentana.add(jpTools, gbc);
+			jfVentana.add(new PanelDebugAgente(jpEntorno.getAgentes()[0]), gbc);
 
 			// Celda 1, 1 (Panel de ebug)
 			gbc.gridx = 1;
@@ -324,7 +325,6 @@ public class Monstruo {
 			jfVentana.setLocationRelativeTo(null);
 			jfVentana.setAlwaysOnTop(true);
 			jfVentana.setVisible(true);
-
 
 			/**
 			 * PARTE LÓGICA. *

@@ -351,4 +351,14 @@ public class Agente implements Ciclico {
 	public int getStartY() {
 		return STARTY;
 	}
+
+	public boolean[][][] getMapa() {
+		return mapa;
+	}
+
+	public boolean[] getW() {
+		return w;
+	}
+	
+	
 }

@@ -231,4 +231,9 @@ public class Entorno extends JPanel implements Ciclico {
 		return elemento.ordinal();
 	}
 
+	public Agente[] getAgentes() {
+		return agentes;
+	}
+
+	
 }
