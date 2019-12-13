@@ -274,14 +274,6 @@ public class Agente implements Ciclico {
 				break;
 			default:
 				break;
-			}
-			alternaPierna = !alternaPierna;
-			break;
-		case 8:
-		case 24:
-			// animación
-			piernaAire = !piernaAire;
-			break;
 		}
 		// System.out.println(x + " " + y);
 		ciclos++;
