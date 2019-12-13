@@ -26,21 +26,21 @@ public class Agente implements Ciclico {
 	private final int STARTX, STARTY;
 
 	protected enum Percepcion {
-		HEDOR, BRISA, RESPLANDOR, GOLPE, POSIBLE_MONSTRUO, MONSTRUO, POSIBLE_PRECIPICIO, PRECIPICIO, GEMIDO
+		HEDOR, BRISA, RESPLANDOR, GOLPE, POSIBLE_MONSTRUO, MONSTRUO, POSIBLE_PRECIPICIO, PRECIPICIO, GEMIDO, DN, DE, DS, DO
 	}
 
 	// 
 	// Pila de movimientos inversos
-	private Stack<Movimiento> pila_mov;
+	private Stack<Accion> pila_mov;
 	private static final int OPACIDAD_DEBUG = 192;
 	private static final Color COLOR_MONSTRUO = new Color(255, 0, 0, OPACIDAD_DEBUG);
 	private static final Color COLOR_POSIBLEMONSTRUO = new Color(255, 128, 0, OPACIDAD_DEBUG);
 	private static final Color COLOR_POSIBLEPRECIPICIO = new Color(0, 255, 255, OPACIDAD_DEBUG);
 
-	protected enum Movimiento {
-		NORTE, ESTE, SUD, OESTE
+	protected enum Accion {
+		NORTE, ESTE, SUD, OESTE, DN, DE, DS, DO
 	}
-	private Movimiento accion, accionp, accionpp;
+	private Accion accion, accionp, accionpp;
 
 	public Agente(Atlas atlas, int gfxBaseTextura, int filas, int columnas, int x, int y) {
 		ciclos = 0;
@@ -57,7 +57,7 @@ public class Agente implements Ciclico {
 
 		mapa = new boolean[filas][columnas][];
 		w = new boolean[Percepcion.values().length];
-		accion = accionp = Movimiento.NORTE;
+		accion = accionp = Accion.NORTE;
 		pila_mov = new Stack();
 		tesoro_encontrado = false;
 
@@ -91,9 +91,9 @@ public class Agente implements Ciclico {
 		 * 1. INFERIR CASILLAS ENVOLVENTES CON LAS PERCEPCIONES ACTUALES
 		 *
 		 */
-		// Movimiento que lleva hacia una pared
+		// Accion que lleva hacia una pared
 		// TODO: Usar el movimiento prohibido en lugar de comprobar las paredes
-		Movimiento prohibido = null;
+		Accion prohibido = null;
 
 		// Por cada casilla que envuelve al agente
 		for (int i = 0; i < offset.length; i++) {
@@ -169,10 +169,11 @@ public class Agente implements Ciclico {
 		 *
 		 */
 		// Si se se ha encontrado el tesoro
+		// Si se se ha encontrado el tesoro
 		if (tesoro_encontrado) {
 			accion = pila_mov.pop();
 		} else {
-			Movimiento posible_accion = null;
+			Accion posible_accion = null;
 			for (int i = 0; i < offset.length; i++) {
 				int casilla_y = getY() + offset[i][0];
 				int casilla_x = getX() + offset[i][1];
@@ -181,8 +182,7 @@ public class Agente implements Ciclico {
 				if (casilla_y != 0 && casilla_y != filas - 1 && casilla_x != 0 && casilla_x != columnas - 1) {
 					if (mapa[casilla_y][casilla_x] == null) {
 						// Ir hacia la casilla vacía
-						posible_accion = Movimiento.values()[i];
-						break;
+						posible_accion = Accion.values()[i];
 					}
 				}
 			}
@@ -191,10 +191,35 @@ public class Agente implements Ciclico {
 			if (posible_accion != null) {
 				accion = posible_accion;
 				// Guardar en la pila la acción contraria
-				pila_mov.push(Movimiento.values()[(accion.ordinal() + 2) % Movimiento.values().length]);
+				if (accion.ordinal() < 4) {
+					pila_mov.push(Accion.values()[(accion.ordinal() + 2) % 4]);
+				}
 			} else {
-				// Volver atrás
-				accion = pila_mov.pop();
+				// Intentamos disparar
+				boolean disparado = false;
+				for (int ii = 0; ii < 4; ii++) {
+					// pos Monstruo y PosibleMonstruo
+					int row = getY() + offset[ii][0];
+					int col = getX() + offset[ii][1];
+
+					// si no hemos disparado ya en esa dirección y hay un M. o P.M. allí pues
+					// disparamos
+					if (mapa[getY()][getX()] != null
+						&& !mapa[getY()][getX()][Percepcion.DN.ordinal() + ii]
+						&& mapa[row][col] != null
+						&& (mapa[row][col][Percepcion.MONSTRUO.ordinal()]
+							|| mapa[row][col][Percepcion.POSIBLE_MONSTRUO.ordinal()])) {
+						accion = Accion.values()[4 + ii];
+						mapa[getY()][getX()][Percepcion.DN.ordinal() + ii] = true;
+						disparado = true;
+						break;
+					}
+				}
+				if (!disparado) {
+					// Volver atrás
+					accion = pila_mov.pop();
+				}
+
 			}
 		}
 		accionpp = accionp;
@@ -208,15 +233,19 @@ public class Agente implements Ciclico {
 				// animación
 				switch (accion) {
 					case NORTE:
+					case DN:
 						gfxDireccion = 1 * 512 / gfxAtlas.getSubancho();
 						break;
 					case ESTE:
+					case DE:
 						gfxDireccion = 2 * 512 / gfxAtlas.getSubancho();
 						break;
 					case SUD:
+					case DS:
 						gfxDireccion = 0 * 512 / gfxAtlas.getSubancho();
 						break;
 					case OESTE:
+					case DO:
 						gfxDireccion = 3 * 512 / gfxAtlas.getSubancho();
 						break;
 				}
@@ -244,8 +273,6 @@ public class Agente implements Ciclico {
 				gfxX -= 1;
 				break;
 			default:
-				gfxY = 0;
-				gfxX = 0;
 				break;
 		}
 		// System.out.println(x + " " + y);
@@ -293,11 +320,11 @@ public class Agente implements Ciclico {
 	}
 
 	public int getX() {
-		return (gfxX + (accion == Movimiento.OESTE ? 31 : 0)) / gfxAtlas.getSubancho();
+		return (gfxX + (accion == Accion.OESTE ? 31 : 0)) / gfxAtlas.getSubancho();
 	}
 
 	public int getY() {
-		return (gfxY + (accion == Movimiento.NORTE ? 31 : 0)) / gfxAtlas.getSubalto();
+		return (gfxY + (accion == Accion.NORTE ? 31 : 0)) / gfxAtlas.getSubalto();
 	}
 
 	public void setW(boolean[] w) {
@@ -311,11 +338,11 @@ public class Agente implements Ciclico {
 		}
 	}
 
-	public Movimiento getAccion() {
+	public Accion getAccion() {
 		return accion;
 	}
 
-	public Movimiento getAccionp() {
+	public Accion getAccionp() {
 		return accionp;
 	}
 
