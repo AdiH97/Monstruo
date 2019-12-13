@@ -26,9 +26,15 @@ public class Entorno extends JPanel implements Ciclico {
 	// índices dónde empiezan las texturas cada agente para cada color //
 	private static final int ATLAS_AMARILLO = 4, ATLAS_ROJO = 7, ATLAS_VERDE = 10, ATLAS_AZUL = 13;
 
-	private final Agente[] agentes;
-	private final int numAgentes = 1; // número de agentes instanciados, de momento 1
+	private final static int MAX_AGENTES = 4;
+
+	private final ArrayList<Agente> agentes;
 	private final Elemento[][] mapa;
+
+	// Número de agentes/monstruos/tesoros
+	private int numAgentes = 1, // Mínimo 1
+			numMonstruos = 0,
+			numTesoros;
 
 	public Entorno(Atlas atlas, int filas, int columnas) {
 		ciclos = 0;
@@ -36,7 +42,7 @@ public class Entorno extends JPanel implements Ciclico {
 		gfxFactorEscaladoIntegral = 1;
 		this.filas = filas;
 		this.columnas = columnas;
-		agentes = new Agente[4];
+		agentes = new ArrayList<>(4);
 		mapa = new Elemento[filas][columnas];
 
 		// inicializar muros
@@ -50,14 +56,9 @@ public class Entorno extends JPanel implements Ciclico {
 			final int ULTIMA_COLUMNA = columnas - 1;
 			mapa[i][PRIMERA_COLUMNA] = mapa[i][ULTIMA_COLUMNA] = Elemento.MURO;
 		}
-
-		// cosas puestas a mano, QUITAR LUEGO
-		mapa[2][1] = Elemento.MONSTRUO;
-		mapa[2][2] = Elemento.TESORO;
-		mapa[2][3] = Elemento.PRECIPICIO;
-		mapa[1][4] = Elemento.PRECIPICIO;
-		mapa[4][3] = Elemento.PRECIPICIO;
-		agentes[0] = new Agente(atlas, ATLAS_AMARILLO, filas, columnas, 1, 4);
+		
+		// Agente principal
+		agentes.add(new Agente(atlas, 4, filas, columnas, 1, 1));
 	}
 
 	// 3 funciones auxiliares para el mapa que a lo mejor estaría bien meter en una clase //
@@ -92,7 +93,7 @@ public class Entorno extends JPanel implements Ciclico {
 	@Override
 	public void ciclo() {
 		for (int i = 0; i < numAgentes; i++) {
-			Agente agente = agentes[i];
+			Agente agente = agentes.get(i);
 
 			// posición del agente //
 			int X = agente.getX();
@@ -164,7 +165,7 @@ public class Entorno extends JPanel implements Ciclico {
 		}
 
 		for (int i = 0; i < numAgentes; i++) {
-			agentes[i].pintar(g, gfxFactorEscaladoIntegral);
+			agentes.get(i).pintar(g, gfxFactorEscaladoIntegral);
 		}
 
 	}
@@ -206,4 +207,81 @@ public class Entorno extends JPanel implements Ciclico {
 		return elemento.ordinal();
 	}
 
+	public int getNumAgentes() {
+		return numAgentes;
+	}
+
+	public void setNumAgentes(int numAgentes) {
+		this.numAgentes = numAgentes;
+	}
+
+	public int getAgenteIdx(int x, int y) {
+		int res = -1;
+		for (int i = 0; i < numAgentes; i++) {
+			if (agentes.get(i).getX() == x && agentes.get(i).getY() == y) {
+				res = i;
+				// Una vez obtenido el índice, salir
+				break;
+			}
+		}
+		return res;
+	}
+
+	public void addAgente(Agente a) {
+		if (numAgentes < MAX_AGENTES) {
+			numAgentes++;
+			agentes.add(a);
+		}
+	}
+
+	public void removeAgente(int idx) {
+		if (idx != 0) {
+			numAgentes--;
+			agentes.remove(idx);
+		} else {
+			System.out.println("El primer agente no se puede eliminar");
+		}
+	}
+	
+	public void addTesoro (int x, int y) {
+		if(mapa[y][x] == null) {
+			mapa[y][x] = Elemento.TESORO;
+		}
+	}
+	
+	public void removeTesoro (int x, int y) {
+		if(mapa[y][x] == Elemento.TESORO) {
+			mapa[y][x] = null;
+		}
+	}
+	
+	public void addMonstruo (int x, int y) {
+		if(mapa[y][x] == null) {
+			mapa[y][x] = Elemento.MONSTRUO;
+		}
+	}
+	
+	public void removeMonstruo(int x, int y) {
+		if(mapa[y][x] == Elemento.MONSTRUO) {
+			mapa[y][x] = null;
+		}
+	}
+	
+	public void addPrecipicio (int x, int y) {
+		if(mapa[y][x] == null) {
+			mapa[y][x] = Elemento.PRECIPICIO;
+		}
+	}
+	
+	public void removePrecipicio (int x, int y) {
+		if(mapa[y][x] == Elemento.PRECIPICIO) {
+			mapa[y][x] = null;
+		}
+	}
+	
+	public void showPercep(boolean b) {
+		for(Agente a : agentes) {
+			a.setVerPercep(b);
+		}
+	}
 }

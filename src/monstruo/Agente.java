@@ -7,6 +7,7 @@ import java.util.Stack;
 public class Agente implements Ciclico {
 
 	private int ciclos;
+	private boolean verPercep;
 
 	private final Atlas gfxAtlas;
 	private int gfxX, gfxY;
@@ -21,7 +22,7 @@ public class Agente implements Ciclico {
 	private boolean w[];
 
 	private boolean tesoro_encontrado;
-	
+
 	private final int STARTX, STARTY;
 
 	protected enum Percepcion {
@@ -43,6 +44,8 @@ public class Agente implements Ciclico {
 
 	public Agente(Atlas atlas, int gfxBaseTextura, int filas, int columnas, int x, int y) {
 		ciclos = 0;
+		verPercep = false;
+
 		gfxAtlas = atlas;
 		gfxX = x * atlas.getSubancho();
 		gfxY = y * atlas.getSubalto();
@@ -57,7 +60,7 @@ public class Agente implements Ciclico {
 		accion = accionp = Movimiento.NORTE;
 		pila_mov = new Stack();
 		tesoro_encontrado = false;
-		
+
 		STARTX = x;
 		STARTY = y;
 	}
@@ -179,6 +182,7 @@ public class Agente implements Ciclico {
 					if (mapa[casilla_y][casilla_x] == null) {
 						// Ir hacia la casilla vacía
 						posible_accion = Movimiento.values()[i];
+						break;
 					}
 				}
 			}
@@ -250,28 +254,30 @@ public class Agente implements Ciclico {
 
 	public void pintar(Graphics g, int escala) {
 
-		for (int i = 0; i < mapa.length; i++) {
-			for (int j = 0; j < mapa[0].length; j++) {
-				g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
-				if (mapa[i][j] != null) {
-					if (mapa[i][j][Percepcion.HEDOR.ordinal()]) {
-						g.setColor(new Color(32, 128, 0, OPACIDAD_DEBUG));
-						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
-					} else if (mapa[i][j][Percepcion.MONSTRUO.ordinal()]) {
-						g.setColor(COLOR_MONSTRUO);
-						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
-					} else if (mapa[i][j][Percepcion.POSIBLE_MONSTRUO.ordinal()]) {
-						g.setColor(COLOR_POSIBLEMONSTRUO);
-						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
-					} else if (mapa[i][j][Percepcion.POSIBLE_PRECIPICIO.ordinal()]) {
-						g.setColor(COLOR_POSIBLEPRECIPICIO);
-						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
-					}  else if (mapa[i][j][Percepcion.PRECIPICIO.ordinal()]) {
-						g.setColor(new Color(0, 0, 0, 255));
-						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
-					} else {
-						g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
-						g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+		if (verPercep) {
+			for (int i = 0; i < mapa.length; i++) {
+				for (int j = 0; j < mapa[0].length; j++) {
+					g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
+					if (mapa[i][j] != null) {
+						if (mapa[i][j][Percepcion.HEDOR.ordinal()]) {
+							g.setColor(new Color(32, 128, 0, OPACIDAD_DEBUG));
+							g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+						} else if (mapa[i][j][Percepcion.MONSTRUO.ordinal()]) {
+							g.setColor(COLOR_MONSTRUO);
+							g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+						} else if (mapa[i][j][Percepcion.POSIBLE_MONSTRUO.ordinal()]) {
+							g.setColor(COLOR_POSIBLEMONSTRUO);
+							g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+						} else if (mapa[i][j][Percepcion.POSIBLE_PRECIPICIO.ordinal()]) {
+							g.setColor(COLOR_POSIBLEPRECIPICIO);
+							g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+						} else if (mapa[i][j][Percepcion.PRECIPICIO.ordinal()]) {
+							g.setColor(new Color(0, 0, 0, 255));
+							g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+						} else {
+							g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
+							g.fillRect(j * gfxAtlas.getSubancho() * escala, i * gfxAtlas.getSubalto() * escala, gfxAtlas.getSubancho() * escala, gfxAtlas.getSubalto() * escala);
+						}
 					}
 				}
 			}
@@ -316,12 +322,16 @@ public class Agente implements Ciclico {
 	public boolean isTesoroEncontrado() {
 		return tesoro_encontrado;
 	}
-	
+
 	public int getStartX() {
 		return STARTX;
 	}
-	
+
 	public int getStartY() {
 		return STARTY;
+	}
+
+	public void setVerPercep(boolean b) {
+		verPercep = b;
 	}
 }
