@@ -295,7 +295,7 @@ public class Agente implements Ciclico {
 		}
 		// esto se hace siempre
 		// animación
-		if (!getPercepciones().get(Percepciones.GOLPE)) {
+		//if (!getPercepciones().get(Percepciones.GOLPE)) {
 			switch (accion) {
 				case Acciones.DESPLAZARSE_NORTE:
 					gY -= 1;
@@ -310,7 +310,7 @@ public class Agente implements Ciclico {
 					gX -= 1;
 					break;
 			}
-		}
+		//}
 		ciclos++;
 	}
 
