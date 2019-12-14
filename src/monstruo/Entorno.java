@@ -132,10 +132,10 @@ public class Entorno extends JPanel implements Ciclico {
 				// posición del agente y última acción del agente //
 				int accionp = a.getAccionp();
 
-				/*if (accionp == Acciones.RECOGER_TESORO) {
-					this.set(x, y, NADA);
+				if (accionp == Acciones.RECOGER_TESORO) {
+					set(x, y, NADA);
 				} // processar disparos
-				else if (accionp >= 4) {
+				/*else if (accionp >= 4) {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
@@ -154,7 +154,7 @@ public class Entorno extends JPanel implements Ciclico {
 				h = this.getAdyacentes(x, y).contains(MONSTRUO);
 				b = this.getAdyacentes(x, y).contains(PRECIPICIO);
 				r = (this.get(x, y) == TESORO);
-				g = accionp >= 0 && accionp < 4 && (this.getColindante(x, y, accionp) == MURO);
+				g = accionp >= 0 && accionp < 4 && (getColindante(x, y, accionp) == MURO);
 				p.set(Percepciones.HEDOR, h);
 				p.set(Percepciones.BRISA, b);
 				p.set(Percepciones.RESPLANDOR, r);

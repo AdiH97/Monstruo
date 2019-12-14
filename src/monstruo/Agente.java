@@ -66,6 +66,11 @@ public class Agente implements Ciclico {
 		this.alto = alto;
 		percepciones = new Percepciones();
 		mapa = new Estado[ancho][alto];
+		for (int i = 0; i < ancho; i++) {
+			for (int j = 0; j < alto; j++) {
+				mapa[i][j] = new Estado();
+			}
+		}
 		accion = accionp = Acciones.DESPLAZARSE_NORTE;
 		pilaAcciones = new Stack<>();
 		num_proyectiles = 0;
@@ -77,24 +82,15 @@ public class Agente implements Ciclico {
 	}
 
 	private void set(int x, int y, int clave) {
-		if (mapa[x][y] == null) {
-			mapa[x][y] = new Estado();
-		}
 		mapa[x][y].set(clave);
 	}
 
 	private void clear(int x, int y, int clave) {
-		if (mapa[x][y] != null) {
-			mapa[x][y].clear(clave);
-		}
+		mapa[x][y].clear(clave);
 	}
 
 	private boolean get(int x, int y, int clave) {
-		if (mapa[x][y] == null) {
-			return false;
-		} else {
-			return mapa[x][y].get(clave);
-		}
+		return mapa[x][y].get(clave);
 	}
 
 	public void calcularAccion() {
@@ -108,7 +104,7 @@ public class Agente implements Ciclico {
 		boolean R = p.get(Percepciones.RESPLANDOR);
 		boolean G = p.get(Percepciones.GOLPE);
 
-		this.set(X, Y, Estado.VISITADA);
+		set(X, Y, Estado.VISITADA);
 		accion = Acciones.NINGUNA;
 
 		// *************** //
@@ -116,40 +112,30 @@ public class Agente implements Ciclico {
 		// *************** //
 		// H => Hi,j
 		if (H) {
-			this.set(X, Y, Estado.HEDOR);
+			set(X, Y, Estado.HEDOR);
 		}
 
 		for (int i = 0; i < 4; i++) {
-			// H && !Mi,j-1 && !Vi,j-1  && !OKWi, j-1 => W?i,j-1
-			// H && !Mi+1,j && !Vi+1,j && !OKWi+1, j => W?i+1,j
-			// H && !Mi,j+1 && !Vi,j+1 && !OKWi, j+1 => W?i,j+1
-			// H && !Mi-1,j  && !Vi-1,j && !OKWi-1, j  => W?i-1,j
-			if (H
-					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
-					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)
-					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_MONSTRUO)) {
-				this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
-			} // !H && W?i, j-1 => !W?i, j-1 && OKWi, j-1
-			// !H && W?i+1, j => !W?i+1, j && OKWi-1, j
-			// !H && W?i, j+1 => !W?i, j+1 && OKWi, j+1
-			// !H && W?i-1, j => !W?i-1, j && OKWi-1, j
-			else {
-				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)) {
-					this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
-					this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_MONSTRUO);
-				}
+			int XX = X + X_OFFSET[i];
+			int YY = Y + Y_OFFSET[i];
+			if (H && !get(XX, YY, Estado.MURO) && !get(XX, YY, Estado.PRECIPICIO) && !get(XX, YY, Estado.VISITADA) && !get(XX, YY, Estado.OK_MONSTRUO)) {
+				set(XX, YY, Estado.POSIBLE_MONSTRUO);
 			}
 		}
 
 		// INFERIR W (CONSULTAR DOCUMENTACIÓN)
 		if (H) {
 			for (int i = 0; i < 4; i++) {
-				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)) {
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+				if (get(XX, YY, Estado.POSIBLE_MONSTRUO)) {
 					for (int j = 0; j < 3; j++) {
-						if (this.get(X + X_HOFFSET[i][j][0], Y + Y_HOFFSET[i][j][0], Estado.HEDOR)
-								&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.HEDOR)) {
-							this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO);
-							this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
+						int HX1 = X + X_HOFFSET[i][j][0];
+						int HY1 = Y + Y_HOFFSET[i][j][0];
+						int HX2 = X + X_HOFFSET[i][j][1];
+						int HY2 = Y + Y_HOFFSET[i][j][1];
+						if (get(HX1, HY1, Estado.HEDOR) && get(HX2, HY2, Estado.HEDOR)) {
+							set(XX, YY, Estado.MONSTRUO);
 						}
 					}
 				}
@@ -158,76 +144,93 @@ public class Agente implements Ciclico {
 
 		// B => Bi,j
 		if (B) {
-			this.set(X, Y, Estado.BRISA);
+			set(X, Y, Estado.BRISA);
 		}
 
-		// B && !Mi,j-1 && !Vi, j-1 && !OKPi, j-1 => P?i,j-1
-		// B && !Mi+1,j && !Vi+1, j && !OKPi+1, j => P?i+1,j
-		// B && !Mi,j+1 && !Vi, j+1 && !OKPi, j+1 => P?i,j+1
-		// B && !Mi-1,j && !Vi-1, j && !OKPi-1, j => P?i-1,j
 		for (int i = 0; i < 4; i++) {
-			if (B
-					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
-					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)
-					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_PRECIPICIO)) {
-				this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
-			} // !B && P?i, j-1 => !P?i, j-1 && OKPi, j-1
-			// !B && P?i+1, j => !P?i+1, j && OKPi-1, j
-			// !B && P?i, j+1 => !P?i, j+1 && OKPi, j+1
-			// !B && P?i-1, j => !P?i-1, j && OKPi-1, j
-			else {
-				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)) {
-					this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
-					this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_PRECIPICIO);
-				}
+			int XX = X + X_OFFSET[i];
+			int YY = Y + Y_OFFSET[i];
+			if (B && !get(XX, YY, Estado.MURO) && !get(XX, YY, Estado.MONSTRUO) && !get(XX, YY, Estado.VISITADA) && !get(XX, YY, Estado.OK_PRECIPICIO)) {
+				set(XX, YY, Estado.POSIBLE_PRECIPICIO);
 			}
 		}
 
 		// INFERIR B (CONSULTAR DOCUMENTACIÓN)
 		if (B) {
 			for (int i = 0; i < 4; i++) {
-				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)) {
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+				if (get(XX, YY, Estado.POSIBLE_PRECIPICIO)) {
 					for (int j = 0; j < 3; j++) {
-						if (this.get(X + X_HOFFSET[i][j][0], Y + Y_HOFFSET[i][j][0], Estado.BRISA)
-								&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.BRISA)) {
-							this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO);
-							this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
+						int BX1 = X + X_HOFFSET[i][j][0];
+						int BY1 = Y + Y_HOFFSET[i][j][0];
+						int BX2 = X + X_HOFFSET[i][j][1];
+						int BY2 = Y + Y_HOFFSET[i][j][1];
+						if (get(BX1, BY1, Estado.BRISA) && get(BX2, BY2, Estado.BRISA)) {
+							set(XX, YY, Estado.PRECIPICIO);
 						}
 					}
 				}
 			}
 		}
 
+		// ¬H => (¬M* => OK_MONSTRUO*)
+		if (!H) {
+			for (int i = 0; i < 4; i++) {
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+				if (!get(XX, YY, Estado.MURO)) {
+					set(XX, YY, Estado.OK_MONSTRUO);
+				}
+			}
+		}
+
+		// ¬B => (¬M* => OK_PRECIPICIO*)
+		if (!B) {
+			for (int i = 0; i < 4; i++) {
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+				if (!get(XX, YY, Estado.MURO)) {
+					set(XX, YY, Estado.OK_PRECIPICIO);
+				}
+			}
+		}
+
 		// Ri,j => Ti,j
 		if (R) {
-			this.set(X, Y, Estado.TESORO);
+			set(X, Y, Estado.TESORO);
+		}
+
+		// ¬Ri,j => ¬Ti,j
+		if (!R) {
+			clear(X, Y, Estado.TESORO);
 		}
 
 		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
 		if (G && accionp == Acciones.DESPLAZARSE_NORTE) {
 			for (int j = 0; j < ancho; j++) {
-				this.set(j, Y - 1, Estado.MURO);
+				set(j, Y - 1, Estado.MURO);
 			}
 		}
 
 		// Gi,j && At-1 = ESTE => Mi+1,0 && Mi+1,1 … Mi+1,m
 		if (G && accionp == Acciones.DESPLAZARSE_ESTE) {
 			for (int j = 0; j < alto; j++) {
-				this.set(X + 1, j, Estado.MURO);
+				set(X + 1, j, Estado.MURO);
 			}
 		}
 
 		// Gi,j && At-1 = SUR => M0,j+1 && M1,j+1 … Mn,j+1
 		if (G && accionp == Acciones.DESPLAZARSE_SUR) {
 			for (int j = 0; j < ancho; j++) {
-				this.set(j, Y + 1, Estado.MURO);
+				set(j, Y + 1, Estado.MURO);
 			}
 		}
 
 		// Gi,j && At-1 = OESTE => Mi-1,0 && Mi-1,1 … Mi-1,m
 		if (G && accionp == Acciones.DESPLAZARSE_OESTE) {
 			for (int j = 0; j < alto; j++) {
-				this.set(X - 1, j, Estado.MURO);
+				set(X - 1, j, Estado.MURO);
 			}
 		}
 
@@ -235,57 +238,24 @@ public class Agente implements Ciclico {
 		// PARTE REACTIVA //
 		// ************** //
 		// Ti,j => RECOGER_TESORO
-		if (this.get(X, Y, Estado.TESORO)) {
+		if (get(X, Y, Estado.TESORO)) {
 			accion = Acciones.RECOGER_TESORO;
-		} 
-		// Mi,j-1 && At-1 = DESPLAZARSE_NORTE => DESPLAZARSE_ESTE
-		// Mi+1,j && At-1 = DESPLAZARSE_ESTE => DESPLAZARSE_SUR
-		// Mi,j+1 && At-1 = DESPLAZARSE_SUR => DESPLAZARSE_OESTE
-		// Mi-1,j && At-1 = DESPLAZARSE_OESTE => DESPLAZARSE_SUR
-		else if (this.get(X + X_OFFSET[accionp], Y + Y_OFFSET[accionp], Estado.MURO)) {
-			accion = (accionp + 1) % 4;
-			pilaAcciones.push((accion + 2) % 4);
 		} else {
-
-			// NILi, j-1 => DESPLAZARSE_NORTE
-			// NILi+1, j => DESPLAZARSE_ESTE
-			// NILi, j+1 => DESPLAZARSE_SUD
-			// NILi-1, j => DESPLAZARSE_OESTE
 			for (int i = 0; i < 4; i++) {
-				if ((this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_MONSTRUO)
-						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_PRECIPICIO))
-						&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)) {
-					this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA);
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+				if (!get(XX, YY, Estado.MURO) && !get(XX, YY, Estado.VISITADA) && get(XX, YY, Estado.OK)) {
 					accion = i;
 					pilaAcciones.push((accion + 2) % 4);
-					break;
-				}
-			}
-
-			// Añadir reglas a la documentación
-			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
-				if (mapa[X + X_OFFSET[i]][Y + Y_OFFSET[i]] == null) {
-					accion = i;
-					pilaAcciones.push((accion + 2) % 4);
-					break;
-				}
-			}
-
-			// W?i, j-1 || W?i+1,j || W?i, j+1 || W?i-1, j => POP()
-			// P?i, j-1 || P?i+1,j || P?i, j+1 || P?i-1, j => POP()
-			// Pi, j-1 || Pi+1,j || Pi, j+1 || Pi-1, j => POP()
-			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
-				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)
-						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)
-						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO)
-						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO)) {
-					accion = pilaAcciones.pop();
 					break;
 				}
 			}
 
 			if (accion == Acciones.NINGUNA) {
-				accion = pilaAcciones.pop();
+				// **** !!!!!!! APAÑO !!!!!!!!!!!!! //
+				if (!pilaAcciones.empty()) {
+					accion = pilaAcciones.pop();
+				}
 			}
 		}
 
@@ -325,19 +295,21 @@ public class Agente implements Ciclico {
 		}
 		// esto se hace siempre
 		// animación
-		switch (accion) {
-			case Acciones.DESPLAZARSE_NORTE:
-				gY -= 1;
-				break;
-			case Acciones.DESPLAZARSE_ESTE:
-				gX += 1;
-				break;
-			case Acciones.DESPLAZARSE_SUR:
-				gY += 1;
-				break;
-			case Acciones.DESPLAZARSE_OESTE:
-				gX -= 1;
-				break;
+		if (!getPercepciones().get(Percepciones.GOLPE)) {
+			switch (accion) {
+				case Acciones.DESPLAZARSE_NORTE:
+					gY -= 1;
+					break;
+				case Acciones.DESPLAZARSE_ESTE:
+					gX += 1;
+					break;
+				case Acciones.DESPLAZARSE_SUR:
+					gY += 1;
+					break;
+				case Acciones.DESPLAZARSE_OESTE:
+					gX -= 1;
+					break;
+			}
 		}
 		ciclos++;
 	}
@@ -375,7 +347,7 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 
