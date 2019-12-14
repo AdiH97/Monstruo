@@ -27,6 +27,7 @@ public class Agente implements Ciclico {
 	private final Percepciones percepciones;
 	private final Estado[][] mapa;
 
+	private int num_proyectiles;
 	private int num_tesoros_encontrados;
 	private int max_tesoros;
 
@@ -52,6 +53,7 @@ public class Agente implements Ciclico {
 		mapa = new Estado[ancho][alto];
 		accion = accionp = Acciones.MOVERSE_NORTE;
 		pilaAcciones = new Stack<>();
+		num_proyectiles = 0;
 		num_tesoros_encontrados = 0;
 		max_tesoros = 0;
 		STARTX = x;
@@ -193,10 +195,12 @@ public class Agente implements Ciclico {
 							&& !mapa[getY()][getX()].get(Estado.DISPARADO_NORTE + ii)
 							&& mapa[row][col] != null
 							&& (mapa[row][col].get(Estado.MONSTRUO)
-							|| mapa[row][col].get(Estado.POSIBLE_MONSTRUO))) {
+							|| mapa[row][col].get(Estado.POSIBLE_MONSTRUO))
+							&& num_proyectiles > 0) {
 						accion = 4 + ii;
 						mapa[getY()][getX()].set(Estado.DISPARADO_NORTE + ii);
 						disparado = true;
+						num_proyectiles--;
 						break;
 					}
 				}
@@ -349,5 +353,9 @@ public class Agente implements Ciclico {
 
 	public void setMaxTesoros(int max) {
 		max_tesoros = max;
+	}
+	
+	public void setNumProyectiles(int proyectiles) {
+		num_proyectiles = proyectiles;
 	}
 }

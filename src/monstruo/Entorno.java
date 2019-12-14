@@ -73,7 +73,7 @@ public class Entorno extends JPanel implements Ciclico {
 			agentes[i].setMaxTesoros(numTesoros);
 		}
 
-		numAgentes = 4;
+		numAgentes = 1;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -244,6 +244,9 @@ public class Entorno extends JPanel implements Ciclico {
 			}
 			if (elemento == MONSTRUO) {
 				numMonstruos++;
+				for (Agente a : agentes) {
+					a.setNumProyectiles(numMonstruos);
+				}
 			}
 		}
 	}
@@ -261,6 +264,9 @@ public class Entorno extends JPanel implements Ciclico {
 			}
 			if (elemento == MONSTRUO) {
 				numMonstruos--;
+				for (Agente a : agentes) {
+					a.setNumProyectiles(numMonstruos);
+				}
 			}
 		}
 	}
