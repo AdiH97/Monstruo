@@ -362,6 +362,7 @@ public class Monstruo {
 				
 				// Deshabilitar los botones de añadir/quitar elementos cuando el juego se inicia el juego
 				for(JButton btn : botones) {
+					btnCambiarColor(null);
 					btn.setEnabled(false);
 				}
 			});
@@ -383,6 +384,7 @@ public class Monstruo {
 				
 				// Deshabilitar los botones de añadir/quitar elementos cuando el juego se inicia el juego
 				for(JButton btn : botones) {
+					btnCambiarColor(null);
 					btn.setEnabled(false);
 				}
 			});

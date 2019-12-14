@@ -70,9 +70,10 @@ public class Entorno extends JPanel implements Ciclico {
 
 		for (int i = 0; i < agentes.length; i++) {
 			agentes[i] = new Agente(gAtlas, G_INDICES_AGENTES[i], ancho, alto, baseX[i], baseY[i]);
+			agentes[i].setMaxTesoros(numTesoros);
 		}
 
-		numAgentes = 1;
+		numAgentes = 4;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -105,7 +106,8 @@ public class Entorno extends JPanel implements Ciclico {
 			int y = a.getY();
 
 			// CÓDIGO ENTORNO //
-			if (!(a.isTesoroEncontrado() && x == a.getStartX() && y == a.getStartY())) {
+			// si el agente no ha encontrado todos los tesoros & no está en la casilla de salida //
+			if (!(a.tesoros_encontrados()&& x == a.getStartX() && y == a.getStartY())) {
 
 				if (ciclos % 32 == 0) {
 
@@ -232,7 +234,12 @@ public class Entorno extends JPanel implements Ciclico {
 		}
 		
 		// Incremenetar contadores
-		if(elemento == TESORO) numTesoros++;
+		if(elemento == TESORO) {
+			numTesoros++;
+			for(Agente a: agentes) {
+				a.setMaxTesoros(numTesoros);
+			}
+		}
 		if(elemento == MONSTRUO) numMonstruos++;
 	}
 	
@@ -242,7 +249,12 @@ public class Entorno extends JPanel implements Ciclico {
 		}
 		
 		// Decrementar contadores
-		if(elemento == TESORO) numTesoros--;
+		if(elemento == TESORO) {
+			numTesoros--;
+			for(Agente a: agentes) {
+				a.setMaxTesoros(numTesoros);
+			}
+		}
 		if(elemento == MONSTRUO) numMonstruos--;
 	}
 	

@@ -27,7 +27,8 @@ public class Agente implements Ciclico {
 	private final Percepciones percepciones;
 	private final Estado[][] mapa;
 
-	private boolean tesoro_encontrado;
+	private int num_tesoros_encontrados;
+	private int max_tesoros;
 
 	private final int STARTX, STARTY;
 
@@ -51,9 +52,14 @@ public class Agente implements Ciclico {
 		mapa = new Estado[ancho][alto];
 		accion = accionp = Acciones.MOVERSE_NORTE;
 		pilaAcciones = new Stack<>();
-		tesoro_encontrado = false;
+		num_tesoros_encontrados = 0;
+		max_tesoros = 0;
 		STARTX = x;
 		STARTY = y;
+	}
+	
+	public boolean tesoros_encontrados () {
+		return num_tesoros_encontrados == max_tesoros;
 	}
 
 	public void calcularAccion() {
@@ -142,7 +148,8 @@ public class Agente implements Ciclico {
 
 			// RESPLANDOR
 			if (entorno_resplandor) {
-				tesoro_encontrado = true;
+				num_tesoros_encontrados++;
+				System.out.println("Tesoros encontrado. Faltan " + (max_tesoros - num_tesoros_encontrados));
 			}
 		}
 
@@ -150,8 +157,9 @@ public class Agente implements Ciclico {
 		 * 2. REALIZAR ACCIÓN CON LA BC Y LAS PERCEPCIONES ACTUALES
 		 *
 		 */
-		// Si se se ha encontrado el tesoro
-		if (tesoro_encontrado) {
+		// Si se se ha encontrado el tesoro volver hacia atrás, ya que el camino de vuelta es seguro
+		if (tesoros_encontrados()) {
+			System.out.println("Todos los tesoros encontrados!");
 			accion = pilaAcciones.pop();
 		} else {
 			int posible_accion = Acciones.NINGUNA;
@@ -318,10 +326,6 @@ public class Agente implements Ciclico {
 		return mapa;
 	}
 
-	public boolean isTesoroEncontrado() {
-		return tesoro_encontrado;
-	}
-
 	public int getStartX() {
 		return STARTX;
 	}
@@ -332,5 +336,9 @@ public class Agente implements Ciclico {
 
 	public void setVerPercepciones(boolean b) {
 		verPercepciones = b;
+	}
+	
+	public void setMaxTesoros(int max) {
+		max_tesoros = max;
 	}
 }
