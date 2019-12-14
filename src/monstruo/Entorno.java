@@ -110,24 +110,6 @@ public class Entorno extends JPanel implements Ciclico {
 			if (!(a.tesoros_encontrados()&& x == a.getStartX() && y == a.getStartY())) {
 
 				if (ciclos % 32 == 0) {
-					
-					// posición del agente y última acción del agente //
-					Accion accionp = agente.getAccionp();
-					
-					// processar disparos
-					if (accionp.ordinal() >= 4) {
-						int balaX = X;
-						int balaY = Y;
-						while (balaY > 0 && balaY < filas - 1 && balaX > 0 && balaX < columnas - 1
-							   && mapa[balaY][balaX] != Elemento.MONSTRUO) {
-							balaX += offset[accionp.ordinal() % 4][1];
-							balaY += offset[accionp.ordinal() % 4][0];
-							if (mapa[balaY][balaX] == Elemento.MONSTRUO) {
-								mapa[balaY][balaX] = null;
-								break;
-							}
-						}
-					}
 
 					// posición del agente y última acción del agente //
 					int accionp = a.getAccionp();
@@ -286,89 +268,4 @@ public class Entorno extends JPanel implements Ciclico {
 		return ciclos;
 	}
 
-	public int getNumAgentes() {
-		return numAgentes;
-	}
-
-	public void setNumAgentes(int numAgentes) {
-		this.numAgentes = numAgentes;
-	}
-
-	public int getAgenteIdx(int x, int y) {
-		int res = -1;
-		for (int i = 0; i < numAgentes; i++) {
-			if (agentes.get(i).getX() == x && agentes.get(i).getY() == y) {
-				res = i;
-				// Una vez obtenido el índice, salir
-				break;
-			}
-		}
-		return res;
-	}
-
-	public void addAgente(Agente a) {
-		if (numAgentes < MAX_AGENTES) {
-			numAgentes++;
-			agentes.add(a);
-		}
-	}
-
-	public void removeAgente(int idx) {
-		if (idx != 0) {
-			numAgentes--;
-			agentes.remove(idx);
-		} else {
-			System.out.println("El primer agente no se puede eliminar");
-		}
-	}
-	
-	public void addTesoro (int x, int y) {
-		if(mapa[y][x] == null) {
-			mapa[y][x] = Elemento.TESORO;
-		}
-	}
-	
-	public void removeTesoro (int x, int y) {
-		if(mapa[y][x] == Elemento.TESORO) {
-			mapa[y][x] = null;
-		}
-	}
-	
-	public void addMonstruo (int x, int y) {
-		if(mapa[y][x] == null) {
-			mapa[y][x] = Elemento.MONSTRUO;
-		}
-	}
-	
-	public void removeMonstruo(int x, int y) {
-		if(mapa[y][x] == Elemento.MONSTRUO) {
-			mapa[y][x] = null;
-		}
-	}
-	
-	public void addPrecipicio (int x, int y) {
-		if(mapa[y][x] == null) {
-			mapa[y][x] = Elemento.PRECIPICIO;
-		}
-	}
-	
-	public void removePrecipicio (int x, int y) {
-		if(mapa[y][x] == Elemento.PRECIPICIO) {
-			mapa[y][x] = null;
-		}
-	}
-	
-	public void showPercep(boolean b) {
-		for(Agente a : agentes) {
-			a.setVerPercep(b);
-		}
-	}
-	
-	public int getCiclos() {
-		return ciclos;
-	}
-	
-	public ArrayList<Agente> getAgentes() {
-		return agentes;
-	}
 }
