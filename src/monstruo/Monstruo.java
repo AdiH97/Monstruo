@@ -42,7 +42,7 @@ public class Monstruo {
 
 	// Valores máximos y mínimos del slider/animación
 	private static final int MIN_TICK = 60;
-	private static final int MAX_TICK = 720;
+	private static final int MAX_TICK = 1080;
 
 	// Tamaño de los iconos
 	private static final int ICON_SIZE = 30;

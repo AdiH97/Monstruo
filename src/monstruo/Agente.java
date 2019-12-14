@@ -29,7 +29,6 @@ public class Agente implements Ciclico {
 
 	private int num_proyectiles;
 	private int num_tesoros_encontrados;
-	private int max_tesoros;
 
 	private final int STARTX, STARTY;
 
@@ -55,15 +54,8 @@ public class Agente implements Ciclico {
 		pilaAcciones = new Stack<>();
 		num_proyectiles = 0;
 		num_tesoros_encontrados = 0;
-		max_tesoros = 0;
 		STARTX = x;
 		STARTY = y;
-	}
-
-	public boolean tesoros_encontrados() {
-		return num_tesoros_encontrados == max_tesoros
-				&& // apaño temporal //
-				max_tesoros != 0;
 	}
 
 	public void calcularAccion() {
@@ -112,7 +104,7 @@ public class Agente implements Ciclico {
 					// Si en la casilla hay la percepción de un posible monstruo, es que antes se
 					// había detectado hedor en
 					// otra casilla que la envuelve. Por lo tanto, en esta casilla hay un monstruo.
-					if (mapa[casilla_x][casilla_y].get(Estado.POSIBLE_MONSTRUO)) {
+					if (mapa[casilla_x][casilla_y].get(Estado.POSIBLE_MONSTRUO) && !mapa[casilla_x][casilla_y].get(Estado.NO_MONSTRUO)) {
 						mapa[casilla_x][casilla_y].set(Estado.MONSTRUO);
 					}
 				}
@@ -155,63 +147,64 @@ public class Agente implements Ciclico {
 		 * 2. REALIZAR ACCIÓN CON LA BC Y LAS PERCEPCIONES ACTUALES
 		 *
 		 */
-		// Si se se ha encontrado el tesoro volver hacia atrás, ya que el camino de vuelta es seguro
-		if (tesoros_encontrados()) {
-			System.out.println("Todos los tesoros encontrados!");
-			accion = pilaAcciones.pop();
-		} else {
-			int posible_accion = Acciones.NINGUNA;
-			for (int i = 0; i < offset.length; i++) {
-				int casilla_y = getY() + offset[i][0];
-				int casilla_x = getX() + offset[i][1];
+		int posible_accion = Acciones.NINGUNA;
+		for (int i = 0; i < offset.length; i++) {
+			int casilla_y = getY() + offset[i][0];
+			int casilla_x = getX() + offset[i][1];
 
-				// Comprobar que la casilla no sea una pared
-				if (casilla_y != 0 && casilla_y != ancho - 1 && casilla_x != 0 && casilla_x != alto - 1) {
-					if (mapa[casilla_x][casilla_y] == null) {
-						// Ir hacia la casilla vacía
-						posible_accion = i; // ya que el índice del offset coincide con el enum del movimiento correspondiente
-					}
+			// Comprobar que la casilla no sea una pared
+			if (casilla_y != 0 && casilla_y != ancho - 1 && casilla_x != 0 && casilla_x != alto - 1) {
+				if (mapa[casilla_x][casilla_y] == null) {
+					// Ir hacia la casilla vacía
+					posible_accion = i; // ya que el índice del offset coincide con el enum del movimiento correspondiente
+				}
+			}
+		}
+
+		// Ir hacia la casilla vacía
+		if (posible_accion != Acciones.NINGUNA) {
+			accion = posible_accion;
+			// Guardar en la pila la acción contraria
+			if (accion < 4) {
+				pilaAcciones.push((accion + 2) % 4);
+			}
+		} else {
+			// Intentamos disparar
+			boolean disparado = false;
+			for (int ii = 0; ii < 4; ii++) {
+				// pos Monstruo y PosibleMonstruo
+				int row = getY() + offset[ii][0];
+				int col = getX() + offset[ii][1];
+
+				// si no hemos disparado ya en esa dirección y hay un M. o P.M. allí pues
+				// disparamos
+				if (mapa[getX()][getY()] != null
+						&& !mapa[getX()][getY()].get(Estado.DISPARADO_NORTE + ii)
+						&& mapa[col][row] != null
+						&& (mapa[col][row].get(Estado.MONSTRUO)
+						|| mapa[col][row].get(Estado.POSIBLE_MONSTRUO))
+						&& num_proyectiles > 0) {
+					accion = 4 + ii;
+					mapa[getX()][getY()].set(Estado.DISPARADO_NORTE + ii);
+					
+					// Si hemos disparado en esta dirección, seguro que el monstruo estará muerto. Por lo tanto, se puede
+					// avanzar
+					mapa[col][row].clear(Estado.POSIBLE_MONSTRUO);
+					mapa[col][row].clear(Estado.MONSTRUO);
+					mapa[col][row].set(Estado.NO_MONSTRUO);
+					
+					disparado = true;
+					num_proyectiles--;
+					break;
 				}
 			}
 
-			// Ir hacia la casilla vacía
-			if (posible_accion != Acciones.NINGUNA) {
-				accion = posible_accion;
-				// Guardar en la pila la acción contraria
-				if (accion < 4) {
-					pilaAcciones.push((accion + 2) % 4);
-				}
-			} else {
-				// Intentamos disparar
-				boolean disparado = false;
-				for (int ii = 0; ii < 4; ii++) {
-					// pos Monstruo y PosibleMonstruo
-					int row = getY() + offset[ii][0];
-					int col = getX() + offset[ii][1];
-
-					// si no hemos disparado ya en esa dirección y hay un M. o P.M. allí pues
-					// disparamos
-					if (mapa[getY()][getX()] != null
-							&& !mapa[getY()][getX()].get(Estado.DISPARADO_NORTE + ii)
-							&& mapa[row][col] != null
-							&& (mapa[row][col].get(Estado.MONSTRUO)
-							|| mapa[row][col].get(Estado.POSIBLE_MONSTRUO))
-							&& num_proyectiles > 0) {
-						accion = 4 + ii;
-						mapa[getY()][getX()].set(Estado.DISPARADO_NORTE + ii);
-						disparado = true;
-						num_proyectiles--;
-						break;
-					}
-				}
-
-				if (!disparado) {
-					// Volver atrás
-					if (!pilaAcciones.empty()) {
-						accion = pilaAcciones.pop();
-					} else {
-						accion = Acciones.NINGUNA;
-					}
+			if (!disparado) {
+				// Volver atrás
+				if (!pilaAcciones.empty()) {
+					accion = pilaAcciones.pop();
+				} else {
+					accion = Acciones.NINGUNA;
 				}
 			}
 		}
@@ -351,11 +344,11 @@ public class Agente implements Ciclico {
 		verPercepciones = b;
 	}
 
-	public void setMaxTesoros(int max) {
-		max_tesoros = max;
-	}
-	
 	public void setNumProyectiles(int proyectiles) {
 		num_proyectiles = proyectiles;
+	}
+	
+	public int getNumTesorosEncontrados() {
+		return num_tesoros_encontrados;
 	}
 }

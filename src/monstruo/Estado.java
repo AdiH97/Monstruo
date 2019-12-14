@@ -10,7 +10,8 @@ public class Estado {
 	public static final int DISPARADO_ESTE = 5;
 	public static final int DISPARADO_SUR = 6;
 	public static final int DISPARADO_OESTE = 7;
-	public static final int NUM_ESTADOS = 8;
+	public static final int NO_MONSTRUO = 8;
+	public static final int NUM_ESTADOS = 9;
 
 	private final boolean[] vector;
 
