@@ -200,22 +200,26 @@ public class Agente implements Ciclico {
 						break;
 					}
 				}
+
 				if (!disparado) {
 					// Volver atrás
-					accion = pilaAcciones.pop();
+					if (!pilaAcciones.empty()) {
+						accion = pilaAcciones.pop();
+					} else {
+						accion = Acciones.NINGUNA;
+					}
 				}
 			}
 		}
-		
+
 		// RESPLANDOR
 		if (entorno_resplandor) {
 			num_tesoros_encontrados++;
 			// Apaño para que no tenga en cuenta el ciclo extra de quedarse quieto
 			pilaAcciones.pop();
 			accion = Acciones.RECOGER_TESORO;
-			System.out.println("Tesoros encontrado. Faltan " + (max_tesoros - num_tesoros_encontrados));
 		}
-		
+
 		accionpp = accionp;
 		accionp = accion;
 	}

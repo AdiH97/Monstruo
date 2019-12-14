@@ -73,7 +73,7 @@ public class Entorno extends JPanel implements Ciclico {
 			agentes[i].setMaxTesoros(numTesoros);
 		}
 
-		numAgentes = 1;
+		numAgentes = 4;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -136,7 +136,7 @@ public class Entorno extends JPanel implements Ciclico {
 					h = this.getAdyacentes(x, y).contains(MONSTRUO);
 					b = this.getAdyacentes(x, y).contains(PRECIPICIO);
 					r = (this.get(x, y) == TESORO);
-					g = accionp < 4 && (this.getColindante(x, y, accionp) == MURO);
+					g = accionp >= 0 && accionp < 4 && (this.getColindante(x, y, accionp) == MURO);
 					p.set(Percepciones.HEDOR, h);
 					p.set(Percepciones.BRISA, b);
 					p.set(Percepciones.RESPLANDOR, r);
