@@ -54,7 +54,7 @@ public class Monstruo {
 	private boolean isMoving;
 	
 	// Mapeo de los botones a booleanes
-	// [addAgente, removeAgente, addChest, removeChest, addBlob, removeBlob, addEmpty, removeEmpty]
+	// [addChest, removeChest, addBlob, removeBlob, addEmpty, removeEmpty]
 	private boolean[] estado_btn = new boolean[8];
 
 	// Indica si se pueden pintar las percepciones del agente
@@ -83,8 +83,6 @@ public class Monstruo {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
 			// Crear iconos de añadir y eliminar paredes
-			ImageIcon icon_addAgente = new ImageIcon(new ImageIcon("./res/add_hero.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-			ImageIcon icon_removeAgente = new ImageIcon(new ImageIcon("./res/remove_hero.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
 			ImageIcon icon_addChest = new ImageIcon(new ImageIcon("./res/add_chest.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
 			ImageIcon icon_removeChest = new ImageIcon(new ImageIcon("./res/remove_chest.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
 			ImageIcon icon_addBlob = new ImageIcon(new ImageIcon("./res/add_blob.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
@@ -107,9 +105,6 @@ public class Monstruo {
 					jbPercep = new JButton(VIEW_PERC),
 					jbStep = new JButton(STEP),
 					// Botones con iconos
-					// TODO Eliminar los botones de añadir agentes, siempre habrá 4
-					jbAddAgent = new JButton("Añadir agente", icon_addAgente),
-					jbRemoveAgent = new JButton("Eliminar agente", icon_removeAgente),
 					jbAddChest = new JButton("Añadir tesoro", icon_addChest),
 					jbRemoveChest = new JButton("Eliminar tesoro", icon_removeChest),
 					jbAddBlob = new JButton("Añadir monstruo", icon_addBlob),
@@ -118,8 +113,6 @@ public class Monstruo {
 					jbRemoveEmpty = new JButton("Eliminar precipicio", icon_removeEmpty);
 
 			// Añadir botones al array
-			botones.add(jbAddAgent);
-			botones.add(jbRemoveAgent);
 			botones.add(jbAddChest);
 			botones.add(jbRemoveChest);
 			botones.add(jbAddBlob);
@@ -150,7 +143,7 @@ public class Monstruo {
 			Entorno jpEntorno = new Entorno(atlas, 10, 10);
 			
 			// TODO Unir ambos paneles
-			PanelDebug pd = new PanelDebug(jpEntorno.getAgentes().get(0));
+			PanelDebug pd = new PanelDebug(jpEntorno.getAgentes()[0]);
 
 			/**
 			 * *********************************************************************************************************
@@ -173,8 +166,6 @@ public class Monstruo {
 			jpControl.setBorder(new CompoundBorder(ebPadding, tbControl));
 
 			// Añadir botones al panel de herramientas
-			jpTools.add(jbAddAgent);
-			jpTools.add(jbRemoveAgent);
 			jpTools.add(jbAddChest);
 			jpTools.add(jbRemoveChest);
 			jpTools.add(jbAddBlob);
@@ -207,8 +198,6 @@ public class Monstruo {
 			gbc_tools.ipadx = 70; // Anchuro de los elementos
 			gbc_tools.ipady = 10; // Altura de los elementos
 
-			jpTools.add(jbAddAgent, gbc_tools);
-			gbc_tools.gridy++;
 			jpTools.add(jbAddChest, gbc_tools);
 			gbc_tools.gridy++;
 			jpTools.add(jbAddBlob, gbc_tools);
@@ -221,8 +210,6 @@ public class Monstruo {
 			// Casilla (0, 0)
 			gbc_tools.gridy = 0;
 
-			jpTools.add(jbRemoveAgent, gbc_tools);
-			gbc_tools.gridy++;
 			jpTools.add(jbRemoveChest, gbc_tools);
 			gbc_tools.gridy++;
 			jpTools.add(jbRemoveBlob, gbc_tools);
@@ -328,42 +315,25 @@ public class Monstruo {
 
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getGfxFactorEscaladoIntegral());
-					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getGfxFactorEscaladoIntegral());
+					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getgFactorEscalado());
+					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getgFactorEscalado());
 
-					if (casillaX > 0 && casillaX < jpEntorno.getColumnas() - 1 && casillaY > 0 && casillaY < jpEntorno.getFilas() - 1) {
+					if (casillaX > 0 && casillaX < jpEntorno.getAlto() - 1 && casillaY > 0 && casillaY < jpEntorno.getAncho() - 1) {
 						if (e.getButton() == 1) // Izquierdo
 						{
-							// Utilizar el estado para realizar las acciones de los botones
-							if (estado_btn[0] &&
-									jpEntorno.tipoCasilla(casillaX, casillaY) != Entorno.Elemento.MONSTRUO &&
-									jpEntorno.tipoCasilla(casillaX, casillaY) != Entorno.Elemento.MURO &&
-									jpEntorno.tipoCasilla(casillaX, casillaY) != Entorno.Elemento.PRECIPICIO &&
-									jpEntorno.tipoCasilla(casillaX, casillaY) != Entorno.Elemento.TESORO) {
-								// El color del agente se basa en el color base (amarillo, 4) más 3 veces el índice del 
-								// agente
-								Agente agente = new Agente(atlas, 4 + (jpEntorno.getNumAgentes() * 3), 
-										jpEntorno.getFilas(), jpEntorno.getColumnas(), casillaX, casillaY);
-								jpEntorno.addAgente(agente);
-							} else if (estado_btn[1]) {
-								int agente_idx = jpEntorno.getAgenteIdx(casillaX, casillaY);
-								if (agente_idx != -1) {
-									jpEntorno.removeAgente(agente_idx);
-								}
+							if(estado_btn[0]) {
+								jpEntorno.addElemento(casillaX, casillaY, Entorno.TESORO);
+							} else if(estado_btn[1]) {
+								jpEntorno.removeElemento(casillaX, casillaY, Entorno.TESORO);
 							} else if(estado_btn[2]) {
-								jpEntorno.addTesoro(casillaX, casillaY);
+								jpEntorno.addElemento(casillaX, casillaY, Entorno.MONSTRUO);
 							} else if(estado_btn[3]) {
-								jpEntorno.removeTesoro(casillaX, casillaY);
+								jpEntorno.removeElemento(casillaX, casillaY, Entorno.MONSTRUO);
 							} else if(estado_btn[4]) {
-								jpEntorno.addMonstruo(casillaX, casillaY);
+								jpEntorno.addElemento(casillaX, casillaY, Entorno.PRECIPICIO);
 							} else if(estado_btn[5]) {
-								jpEntorno.removeMonstruo(casillaX, casillaY);
-							} else if(estado_btn[6]) {
-								jpEntorno.addPrecipicio(casillaX, casillaY);
-							} else if(estado_btn[7]) {
-								jpEntorno.removePrecipicio(casillaX, casillaY);
+								jpEntorno.removeElemento(casillaX, casillaY, Entorno.PRECIPICIO);
 							}
-							
 						}
 					}
 				}
@@ -389,6 +359,12 @@ public class Monstruo {
 				} else {
 					jbMoving.setText(START);
 				}
+				
+				// Deshabilitar los botones de añadir/quitar elementos cuando el juego se inicia el juego
+				for(JButton btn : botones) {
+					btnCambiarColor(null);
+					btn.setEnabled(false);
+				}
 			});
 			
 			// Ver/ocultar percepciones
@@ -399,12 +375,18 @@ public class Monstruo {
 				} else {
 					jbPercep.setText(VIEW_PERC);
 				}
-				jpEntorno.showPercep(viewPercep);
+				jpEntorno.verPercepciones(viewPercep);
 			});
 			
 			// Avanzar un ciclo
 			jbStep.addActionListener((ActionEvent) ->{
 				doStep = true;
+
+				// Deshabilitar los botones de añadir/quitar elementos cuando el juego se inicia el juego
+				for(JButton btn : botones) {
+					btnCambiarColor(null);
+					btn.setEnabled(false);
+				}
 			});
 			
 			
@@ -432,7 +414,7 @@ public class Monstruo {
 
 				int uw = jfVentana.getContentPane().getWidth() - jpControl.getWidth();
 				int uh = jfVentana.getContentPane().getHeight();
-				jpEntorno.setIntegralFactor(uw, uh);
+				jpEntorno.setgFactorEscalado(uw, uh);
 
 				// CALCULO //
 				if (isMoving || doStep) {
