@@ -79,7 +79,7 @@ public class Agente implements Ciclico {
 		 * 1. INFERIR CASILLAS ENVOLVENTES CON LAS PERCEPCIONES ACTUALES
 		 *
 		 */
-		// Movimiento que lleva hacia una pared
+		// Accion que lleva hacia una pared
 		// TODO: Usar el movimiento prohibido en lugar de comprobar las paredes
 		int prohibido = Acciones.NINGUNA;
 
@@ -334,7 +334,7 @@ public class Agente implements Ciclico {
 		return STARTY;
 	}
 
-	public void setVerPercepciones(boolean b) {
+  public void setVerPercepciones(boolean b) {
 		verPercepciones = b;
 	}
 	

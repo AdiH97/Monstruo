@@ -381,7 +381,7 @@ public class Monstruo {
 			// Avanzar un ciclo
 			jbStep.addActionListener((ActionEvent) ->{
 				doStep = true;
-				
+
 				// Deshabilitar los botones de añadir/quitar elementos cuando el juego se inicia el juego
 				for(JButton btn : botones) {
 					btnCambiarColor(null);
