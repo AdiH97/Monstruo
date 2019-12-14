@@ -119,15 +119,25 @@ public class Agente implements Ciclico {
 			this.set(X, Y, Estado.HEDOR);
 		}
 
-		//H && !Mi,j-1 && !Vi,j-1 => W?i,j-1
-		//H && !Mi+1,j && !Vi+1,j => W?i+1,j
-		//H && !Mi,j+1 && !Vi,j+1 => W?i,j+1
-		//H && !Mi-1,j  && !Vi-1,j => W?i-1,j
 		for (int i = 0; i < 4; i++) {
+			// H && !Mi,j-1 && !Vi,j-1  && !OKWi, j-1 => W?i,j-1
+			// H && !Mi+1,j && !Vi+1,j && !OKWi+1, j => W?i+1,j
+			// H && !Mi,j+1 && !Vi,j+1 && !OKWi, j+1 => W?i,j+1
+			// H && !Mi-1,j  && !Vi-1,j && !OKWi-1, j  => W?i-1,j
 			if (H
-				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
-				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)) {
+					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
+					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)
+					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_MONSTRUO)) {
 				this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
+			} // !H && W?i, j-1 => !W?i, j-1 && OKWi, j-1
+			// !H && W?i+1, j => !W?i+1, j && OKWi-1, j
+			// !H && W?i, j+1 => !W?i, j+1 && OKWi, j+1
+			// !H && W?i-1, j => !W?i-1, j && OKWi-1, j
+			else {
+				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)) {
+					this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
+					this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_MONSTRUO);
+				}
 			}
 		}
 
@@ -137,8 +147,8 @@ public class Agente implements Ciclico {
 				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)) {
 					for (int j = 0; j < 3; j++) {
 						if (this.get(X + X_HOFFSET[i][j][0], Y + Y_HOFFSET[i][j][0], Estado.HEDOR)
-							&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.HEDOR)) {
-							this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO);
+								&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.HEDOR)) {
+							this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO);
 							this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
 						}
 					}
@@ -151,15 +161,25 @@ public class Agente implements Ciclico {
 			this.set(X, Y, Estado.BRISA);
 		}
 
-		//B && !Mi,j-1 && !Vi, j-1 => P?i,j-1
-		//B && !Mi+1,j && !Vi+1, j  => P?i+1,j
-		//B && !Mi,j+1 && !Vi, j+1 => P?i,j+1
-		//B && !Mi-1,j && !Vi-1, j  => P?i-1,j
+		// B && !Mi,j-1 && !Vi, j-1 && !OKPi, j-1 => P?i,j-1
+		// B && !Mi+1,j && !Vi+1, j && !OKPi+1, j => P?i+1,j
+		// B && !Mi,j+1 && !Vi, j+1 && !OKPi, j+1 => P?i,j+1
+		// B && !Mi-1,j && !Vi-1, j && !OKPi-1, j => P?i-1,j
 		for (int i = 0; i < 4; i++) {
 			if (B
-				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
-				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)) {
+					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
+					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)
+					&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_PRECIPICIO)) {
 				this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
+			} // !B && P?i, j-1 => !P?i, j-1 && OKPi, j-1
+			// !B && P?i+1, j => !P?i+1, j && OKPi-1, j
+			// !B && P?i, j+1 => !P?i, j+1 && OKPi, j+1
+			// !B && P?i-1, j => !P?i-1, j && OKPi-1, j
+			else {
+				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)) {
+					this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
+					this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_PRECIPICIO);
+				}
 			}
 		}
 
@@ -169,8 +189,8 @@ public class Agente implements Ciclico {
 				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)) {
 					for (int j = 0; j < 3; j++) {
 						if (this.get(X + X_HOFFSET[i][j][0], Y + Y_HOFFSET[i][j][0], Estado.BRISA)
-							&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.BRISA)) {
-							this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO);
+								&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.BRISA)) {
+							this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO);
 							this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
 						}
 					}
@@ -217,22 +237,36 @@ public class Agente implements Ciclico {
 		// Ti,j => RECOGER_TESORO
 		if (this.get(X, Y, Estado.TESORO)) {
 			accion = Acciones.RECOGER_TESORO;
-		} // Mi,j-1 && At-1 = DESPLAZARSE_NORTE => DESPLAZARSE_ESTE
+		} 
+		// Mi,j-1 && At-1 = DESPLAZARSE_NORTE => DESPLAZARSE_ESTE
 		// Mi+1,j && At-1 = DESPLAZARSE_ESTE => DESPLAZARSE_SUR
 		// Mi,j+1 && At-1 = DESPLAZARSE_SUR => DESPLAZARSE_OESTE
 		// Mi-1,j && At-1 = DESPLAZARSE_OESTE => DESPLAZARSE_SUR
 		else if (this.get(X + X_OFFSET[accionp], Y + Y_OFFSET[accionp], Estado.MURO)) {
 			accion = (accionp + 1) % 4;
-			pilaAcciones.push(accion);
-		} // NILi, j-1 => DESPLAZARSE_NORTE
-		// NILi+1, j => DESPLAZARSE_ESTE
-		// NILi, j+1 => DESPLAZARSE_SUD
-		// NILi-1, j => DESPLAZARSE_OESTE
-		else {
-			for (int i = 0; i < 4; i++) { // TODO puede que tenga que ir al final
+			pilaAcciones.push((accion + 2) % 4);
+		} else {
+
+			// NILi, j-1 => DESPLAZARSE_NORTE
+			// NILi+1, j => DESPLAZARSE_ESTE
+			// NILi, j+1 => DESPLAZARSE_SUD
+			// NILi-1, j => DESPLAZARSE_OESTE
+			for (int i = 0; i < 4; i++) {
+				if ((this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_MONSTRUO)
+						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.OK_PRECIPICIO))
+						&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)) {
+					this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA);
+					accion = i;
+					pilaAcciones.push((accion + 2) % 4);
+					break;
+				}
+			}
+
+			// Añadir reglas a la documentación
+			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
 				if (mapa[X + X_OFFSET[i]][Y + Y_OFFSET[i]] == null) {
 					accion = i;
-					pilaAcciones.push(accion);
+					pilaAcciones.push((accion + 2) % 4);
 					break;
 				}
 			}
@@ -240,18 +274,18 @@ public class Agente implements Ciclico {
 			// W?i, j-1 || W?i+1,j || W?i, j+1 || W?i-1, j => POP()
 			// P?i, j-1 || P?i+1,j || P?i, j+1 || P?i-1, j => POP()
 			// Pi, j-1 || Pi+1,j || Pi, j+1 || Pi-1, j => POP()
-			for (int i = 0; i < 4 && accion != Acciones.NINGUNA; i++) {
+			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
 				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)
-					|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)
-					|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO)
-					|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO)) {
+						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)
+						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO)
+						|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO)) {
 					accion = pilaAcciones.pop();
 					break;
 				}
 			}
 
 			if (accion == Acciones.NINGUNA) {
-				accion = Acciones.DESPLAZARSE_NORTE;
+				accion = pilaAcciones.pop();
 			}
 		}
 
@@ -313,7 +347,7 @@ public class Agente implements Ciclico {
 		if (verPercepciones) {
 			for (int i = 0; i < ancho; i++) {
 				for (int j = 0; j < alto; j++) {
-					g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
+					//g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
 					if (mapa[i][j] != null) {
 						if (mapa[i][j].get(Estado.MONSTRUO)) {
 							g.setColor(COLOR_MONSTRUO);
@@ -327,7 +361,7 @@ public class Agente implements Ciclico {
 						} else if (mapa[i][j].get(Estado.PRECIPICIO)) {
 							g.setColor(new Color(0, 0, 0, 255));
 							g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
-						} else {
+						} else if (mapa[i][j].get(Estado.VISITADA)) {
 							g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
 							g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
 						}
@@ -341,7 +375,7 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 
