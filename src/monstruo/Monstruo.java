@@ -1,25 +1,23 @@
 package monstruo;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
@@ -33,9 +31,11 @@ import javax.swing.event.ChangeEvent;
 public class Monstruo {
 
 	private static final String TITLE = "Monstruo",
-	 STOP = "⏯",
-	 START = "⏯",
-	 VIEW_PERC = "Ver percepciones";
+			STOP = "Parar robot",
+			START = "Iniciar robot",
+			VIEW_PERC = "Ver percepciones",
+			HIDE_PERC = "Ocultar percepciones",
+			STEP = "Siguiente paso";
 
 	// Separación entre los paneles de la ventana
 	private static final int PADDING = 25;
@@ -48,23 +48,27 @@ public class Monstruo {
 	private static final int ICON_SIZE = 30;
 
 	// Valor del slider / espera entre ciclos
-	private static int framerate = MIN_TICK;
+	private int framerate = MIN_TICK;
 
 	// Indica si el agente se puede mover
-	private static boolean isMoving;
-
-	// Indicar si se puede añadir/quitar paredes/agentes
-	private static boolean canPaint = false;
-	private static boolean canAddAgente = false;
-	private static boolean canRemoveAgente = false;
-	private static boolean canAddPared = true;
-	private static boolean canRemovePared = false;
+	private boolean isMoving;
+	
+	// Mapeo de los botones a booleanes
+	// [addChest, removeChest, addBlob, removeBlob, addEmpty, removeEmpty]
+	private boolean[] estado_btn = new boolean[8];
 
 	// Indica si se pueden pintar las percepciones del agente
-	private static boolean viewPercep = false;
+	private boolean viewPercep = false;
 
-	public static void main(String[] args) {
-
+	// Array con los botones de la interfaz
+	// (Cambiar el color de el resto de botones al color original)
+	private ArrayList<JButton> botones = new ArrayList();
+	
+	// Booleano que indica si se realizará un paso (32 ciclos)
+	private boolean doStep = false;
+	
+	public Monstruo () {
+		
 		try {
 			/**
 			 * *********************************************************************************************************
@@ -79,41 +83,42 @@ public class Monstruo {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
 			// Crear iconos de añadir y eliminar paredes
-			ImageIcon icon_pencil = new ImageIcon(new ImageIcon("./res/pencil.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-			ImageIcon icon_eraser = new ImageIcon(new ImageIcon("./res/eraser.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-			ImageIcon icon_add = new ImageIcon(new ImageIcon("./res/add.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
-			ImageIcon icon_remove = new ImageIcon(new ImageIcon("./res/remove.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_addChest = new ImageIcon(new ImageIcon("./res/add_chest.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_removeChest = new ImageIcon(new ImageIcon("./res/remove_chest.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_addBlob = new ImageIcon(new ImageIcon("./res/add_blob.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_removeBlob = new ImageIcon(new ImageIcon("./res/remove_blob.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_addEmpty = new ImageIcon(new ImageIcon("./res/add_empty.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+			ImageIcon icon_removeEmpty = new ImageIcon(new ImageIcon("./res/remove_empty.png").getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
 
 			// Crear ventana
 			JFrame jfVentana = new JFrame(TITLE);
 
 			// Crear panel de debug
 			JPanel jpControl = new JPanel();
+			
 
 			// Crear panel de herramientas
 			JPanel jpTools = new JPanel();
 
-			// Crear labels
-			JLabel jlAccionp = new JLabel("Acción anterior: "),
-			 jlAccion = new JLabel("Acción actual: "),
-			 jlWp = new JLabel("Vector anterior: "),
-			 jlW = new JLabel("Vector actual: "),
-			 jlCount = new JLabel("w0     w1    w2    w3    w4    w5    w6    w7");
-
-			// Crear campos de texto
-			JTextField jtfAccionp = new JTextField(25),
-			 jtfAccion = new JTextField(25),
-			 jtfW = new JTextField(25),
-			 jtfWp = new JTextField(25);
-
 			// Crear botón de parada
 			JButton jbMoving = new JButton(START),
-			 jbPercep = new JButton(VIEW_PERC),
-			 // Botones con iconos
-			 jbAddWall = new JButton("Añadir paredes", icon_pencil),
-			 jbRemoveWall = new JButton("Eliminar paredes", icon_eraser),
-			 jbAddAgent = new JButton("Añadir agentes", icon_add),
-			 jbRemoveAgent = new JButton("Eliminar agentes", icon_remove);
+					jbPercep = new JButton(VIEW_PERC),
+					jbStep = new JButton(STEP),
+					// Botones con iconos
+					jbAddChest = new JButton("Añadir tesoro", icon_addChest),
+					jbRemoveChest = new JButton("Eliminar tesoro", icon_removeChest),
+					jbAddBlob = new JButton("Añadir monstruo", icon_addBlob),
+					jbRemoveBlob = new JButton("Eliminar monstruo", icon_removeBlob),
+					jbAddEmpty = new JButton("Añadir precipicio", icon_addEmpty),
+					jbRemoveEmpty = new JButton("Eliminar precipicio", icon_removeEmpty);
+
+			// Añadir botones al array
+			botones.add(jbAddChest);
+			botones.add(jbRemoveChest);
+			botones.add(jbAddBlob);
+			botones.add(jbRemoveBlob);
+			botones.add(jbAddEmpty);
+			botones.add(jbRemoveEmpty);
 
 			// Crear slider (control del límite de ticks)
 			JSlider jslTicks = new JSlider(0, MIN_TICK, MAX_TICK, framerate);
@@ -125,8 +130,10 @@ public class Monstruo {
 			// Títulos de los bordes
 			TitledBorder tbTools = new TitledBorder(ebLowered, "Herramientas");
 			TitledBorder tbControl = new TitledBorder(ebLowered, "Variables del agente");
-
-			// Constantes del layout de la ventana (GridBagLayout)
+			
+			// Constantes de los layouts de cada panel
+			GridBagConstraints gbc_tools = new GridBagConstraints();
+			GridBagConstraints gbc_db = new GridBagConstraints();
 			GridBagConstraints gbc = new GridBagConstraints();
 
 			/**
@@ -134,6 +141,9 @@ public class Monstruo {
 			 */
 			final Atlas atlas = new Atlas("./res/atlas.png", 32, 32);
 			Entorno jpEntorno = new Entorno(atlas, 10, 10);
+			
+			// TODO Unir ambos paneles
+			PanelDebug pd = new PanelDebug(jpEntorno.getAgentes()[0]);
 
 			/**
 			 * *********************************************************************************************************
@@ -143,12 +153,7 @@ public class Monstruo {
 			/**
 			 * PARTE GRÁFICA. *
 			 */
-			// No se puede modificar el texto de los campos de texto
-			jtfAccionp.setEditable(false);
-			jtfAccion.setEditable(false);
-			jtfWp.setEditable(false);
-			jtfW.setEditable(false);
-
+			
 			// Personalizar slider
 			jslTicks.setPaintTrack(true);		// Línea
 			jslTicks.setPaintTicks(true);		// Marcas de ticks
@@ -161,162 +166,120 @@ public class Monstruo {
 			jpControl.setBorder(new CompoundBorder(ebPadding, tbControl));
 
 			// Añadir botones al panel de herramientas
-			jpTools.add(jbAddWall);
-			jpTools.add(jbRemoveWall);
-			jpTools.add(jbAddAgent);
-			jpTools.add(jbRemoveAgent);
+			jpTools.add(jbAddChest);
+			jpTools.add(jbRemoveChest);
+			jpTools.add(jbAddBlob);
+			jpTools.add(jbRemoveBlob);
+			jpTools.add(jbAddEmpty);
+			jpTools.add(jbRemoveEmpty);
 
 			// Añadir labels y campos de texto al panel de debug
-			jpControl.add(jlAccionp);
-			jpControl.add(jtfAccionp);
-			jpControl.add(jlWp);
-			jpControl.add(jtfWp);
-			jpControl.add(jlAccion);
-			jpControl.add(jtfAccion);
-			jpControl.add(jlW);
-			jpControl.add(jtfW);
 			jpControl.add(jbMoving);
 			jpControl.add(jbPercep);
+			jpControl.add(jbStep);
 			jpControl.add(jslTicks);
 
-			// Establecer el layout del panel de herramientas (GroupLayout)
-			GroupLayout tools_layout = new GroupLayout(jpTools);
-			jpTools.setLayout(tools_layout);
-			tools_layout.setAutoCreateGaps(true);
-			tools_layout.setAutoCreateContainerGaps(true);
-
-			// Establecer el layout del panel de Debug (GroupLayout)
-			GroupLayout db_layout = new GroupLayout(jpControl);
-			jpControl.setLayout(db_layout);
-			db_layout.setAutoCreateGaps(true);
-			db_layout.setAutoCreateContainerGaps(true);
+			// Establecer los layouts
+			jpTools.setLayout(new GridBagLayout());
+			jpControl.setLayout(new GridBagLayout());
+			jfVentana.setLayout(new GridBagLayout());
 
 			/**
 			 * LAYOUTS. *
-			 *
-			 * Para que los layouts tengan efecto, se tienen que definir antes que el layout de la
-			 * ventana principal.
-			 *
-			 * En los layouts debe haber una correspondencia entre los elementos horizontales y
-			 * verticales (dos elementos que están en la misma posición en dos columnas diferentes
-			 * estáran en la misma fila).
 			 */
-			// Horizontal (los elementos estarán centrados)
-			tools_layout.setHorizontalGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-			 // 1 grupo padre
-			 .addGroup(tools_layout.createSequentialGroup()
-			  // 1a columna
-			  .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
-			   .addComponent(jbAddWall)
-			   .addComponent(jbAddAgent)
-			  )
-			  // Separador
-			  .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-			  // 2a columna
-			  .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
-			   .addComponent(jbRemoveWall)
-			   .addComponent(jbRemoveAgent)
-			  )
-			 )
-			);
-			// Vertical
-			tools_layout.setVerticalGroup(tools_layout.createSequentialGroup()
-			 // 2 grupos padre (filas)
-			 .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jbAddWall)
-			  .addComponent(jbRemoveWall)
-			 )
-			 .addGroup(tools_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jbAddAgent)
-			  .addComponent(jbRemoveAgent)
-			 )
-			);
 
-			/* Ordenar los elementos del panel */
-			// Horizontal (los elementos estarán centrados)
-			db_layout.setHorizontalGroup(db_layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-			 // 2 grupos padres y un elemento
+			/**
+			 * Layout del panel de herramientas *
+			 */
+			// Casilla (0, 0)
+			gbc_tools.gridx = 0;
+			gbc_tools.gridy = 0;
+			gbc_tools.fill = GridBagConstraints.HORIZONTAL;
+			gbc_tools.ipadx = 70; // Anchuro de los elementos
+			gbc_tools.ipady = 10; // Altura de los elementos
 
-			 // 1r grupo
-			 .addGroup(db_layout.createSequentialGroup()
-			  // 1a columna
-			  .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.TRAILING) // "Izquierda"
-			   .addComponent(jlW)
-			   .addComponent(jlWp)
-			   .addComponent(jlAccion)
-			   .addComponent(jlAccionp)
-			  )
-			  // Separador
-			  .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-			  // 2a columna
-			  .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.LEADING) // "Derecha"
-			   .addComponent(jlCount)
-			   .addComponent(jtfW)
-			   .addComponent(jtfWp)
-			   .addComponent(jtfAccion)
-			   .addComponent(jtfAccionp)
-			  )
-			 )
-			 // 2o grupo
-			 .addGroup(db_layout.createSequentialGroup()
-			  // No están dividos por columnas porque interesa que estén centrados (propiedad global)
-			  .addComponent(jbMoving)
-			  .addComponent(jbPercep)
-			 )
-			 // Componente (también centrado por la propiedad global)
-			 .addComponent(jslTicks)
-			);
-			// Vertical
-			db_layout.setVerticalGroup(db_layout.createSequentialGroup()
-			 // 6 grupos padre (filas) y un elemento
-			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jlCount)
-			 )
-			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jlWp)
-			  .addComponent(jtfWp)
-			 )
-			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jlW)
-			  .addComponent(jtfW)
-			 )
-			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jlAccionp)
-			  .addComponent(jtfAccionp)
-			 )
-			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jlAccion)
-			  .addComponent(jtfAccion)
-			 )
-			 .addGroup(db_layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			  .addComponent(jbMoving)
-			  .addComponent(jbPercep)
-			 )
-			 .addComponent(jslTicks)
-			);
+			jpTools.add(jbAddChest, gbc_tools);
+			gbc_tools.gridy++;
+			jpTools.add(jbAddBlob, gbc_tools);
+			gbc_tools.gridy++;
+			jpTools.add(jbAddEmpty, gbc_tools);
+			
+			// Siguiente columna
+			gbc_tools.gridx++;
+			
+			// Casilla (0, 0)
+			gbc_tools.gridy = 0;
 
-			// Establecer la forma del layout de la ventana
-			jfVentana.setLayout(new GridBagLayout());
+			jpTools.add(jbRemoveChest, gbc_tools);
+			gbc_tools.gridy++;
+			jpTools.add(jbRemoveBlob, gbc_tools);
+			gbc_tools.gridy++;
+			jpTools.add(jbRemoveEmpty, gbc_tools);
+
+			/**
+			 * Layout del panel de debug *
+			 */
+			gbc_db.fill = GridBagConstraints.HORIZONTAL;
+			// EEl botón de 'Ocultar percepciones' desplaza el panel de entorno y hace que no sea visible cuando no está
+			// en pantalla completa. Esto se debe a que el ipad se suma al tamaño del texto de los botones.
+			gbc_db.ipadx = 30;
+			gbc_db.ipady = 10;
+
+			gbc_db.gridx = 0;
+			gbc_db.gridy = 0;
+			gbc_db.gridheight = 1;
+			gbc_db.gridwidth = 1;
+			jpControl.add(jbPercep, gbc_db);
+			
+			gbc_db.gridx = 1;
+			gbc_db.gridy = 0;
+			gbc_db.gridheight = 1;
+			gbc_db.gridwidth = 1;
+			jpControl.add(jbMoving, gbc_db);
+			
+			gbc_db.gridx = 2;
+			gbc_db.gridy = 0;
+			gbc_db.gridheight = 1;
+			gbc_db.gridwidth = 1;
+			jpControl.add(jbStep, gbc_db);
+			
+			gbc_db.gridx = 0;
+			gbc_db.gridy = 1;
+			gbc_db.gridheight = 1;
+			gbc_db.gridwidth = 3;
+			jpControl.add(jslTicks, gbc_db);
+			
+			gbc_db.gridx = 1;
+			gbc_db.gridy = 2;
+			gbc_db.gridheight = 1;
+			gbc_db.gridwidth = 3;
+			jpControl.add(pd, gbc_db);
+			
+			/**
+			 * Layout de la ventana principal *
+			 */
 
 			// Celda 0, 0 (Entorno)
 			gbc.gridx = 0;
 			gbc.gridy = 0;
-			// Ocupará 2 celdas verticales
 			gbc.gridheight = 2;
-			jfVentana.add(jpEntorno, gbc); // Añadir el entorno con las constantes definidas
+			gbc.gridwidth = 2;
+			gbc.weightx = 1;
+			gbc.weighty = 1;
+			jfVentana.add(jpEntorno, gbc);
 
 			// Celda 1, 0 (Panel de herramientas)
-			gbc.gridx = 1;
+			gbc.gridx = 2;
 			gbc.gridy = 0;
-			// Parte superior de la ventana
-			gbc.anchor = GridBagConstraints.PAGE_START;
-			jfVentana.add(new PanelDebugAgente(jpEntorno.getAgentes()[0]), gbc);
+			gbc.gridheight = 1;
+			gbc.gridwidth = 1;
+			jfVentana.add(jpTools, gbc);
 
-			// Celda 1, 1 (Panel de ebug)
-			gbc.gridx = 1;
+			// Celda 1, 1 (Panel de debug)
+			gbc.gridx = 2;
 			gbc.gridy = 1;
-			// Parte central de la ventana
-			gbc.anchor = GridBagConstraints.PAGE_END;
+			gbc.gridheight = 1;
+			gbc.gridwidth = 1;
 			jfVentana.add(jpControl, gbc);
 
 			// Establecer las propiedas de la ventana
@@ -331,54 +294,46 @@ public class Monstruo {
 			 */
 			// El agente inicialmente está parado
 			isMoving = false;
+			viewPercep = false;
 
 			/**
 			 * *********************************************************************************************************
 			 * EVENTOS
 			 * *********************************************************************************************************
 			 */
+			
 			// Evento del panel del entorno
 			jpEntorno.addMouseListener(new MouseListener() {
-				// Pintar/Borrar pared
 				@Override
 				public void mouseClicked(MouseEvent e) {
 
 				}
-
-				// Indicar al evento de arrastrar que puede pintar
 				@Override
 				public void mousePressed(MouseEvent e) {
-					if (e.getButton() == 1) // Izquierdo
-					{
-						canPaint = true;
-					}
+
 				}
 
-				// Indicar al evento de arrastrar que no puede pintar
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					canPaint = false;
 					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getgFactorEscalado());
 					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getgFactorEscalado());
 
 					if (casillaX > 0 && casillaX < jpEntorno.getAlto() - 1 && casillaY > 0 && casillaY < jpEntorno.getAncho() - 1) {
 						if (e.getButton() == 1) // Izquierdo
-						// Cambiar celda
 						{
-							/*if (canAddPared) {
-								jpEntorno.cambiarAPared(casillaX, casillaY);
-							} else if (canRemovePared) {
-								jpEntorno.cambiarASuelo(casillaX, casillaY);
-							} else if (canAddAgente && !jpEntorno.tipoCasilla(casillaX, casillaY)) {
-								Agente agente = new Agente(atlas, casillaX, casillaY);
-								agente.setShowPerceptions(viewPercep);
-								jpEntorno.addAgente(agente);
-							} else if (canRemoveAgente) {
-								int agente_idx = jpEntorno.getAgenteIdx(casillaX, casillaY);
-								if (agente_idx != -1) {
-									jpEntorno.removeAgente(agente_idx);
-								}
-							}*/
+							if(estado_btn[0]) {
+								jpEntorno.addElemento(casillaX, casillaY, Entorno.TESORO);
+							} else if(estado_btn[1]) {
+								jpEntorno.removeElemento(casillaX, casillaY, Entorno.TESORO);
+							} else if(estado_btn[2]) {
+								jpEntorno.addElemento(casillaX, casillaY, Entorno.MONSTRUO);
+							} else if(estado_btn[3]) {
+								jpEntorno.removeElemento(casillaX, casillaY, Entorno.MONSTRUO);
+							} else if(estado_btn[4]) {
+								jpEntorno.addElemento(casillaX, casillaY, Entorno.PRECIPICIO);
+							} else if(estado_btn[5]) {
+								jpEntorno.removeElemento(casillaX, casillaY, Entorno.PRECIPICIO);
+							}
 						}
 					}
 				}
@@ -386,36 +341,8 @@ public class Monstruo {
 				@Override
 				public void mouseEntered(MouseEvent e) {
 				}
-
 				@Override
 				public void mouseExited(MouseEvent e) {
-				}
-			});
-
-			// Evento del panel del entorno (arrastrar ratón)
-			jpEntorno.addMouseMotionListener(new MouseMotionListener() {
-
-				// Pintar/Borrar paredes mientras se mantega pulsado el botón izquierdo
-				@Override
-				public void mouseDragged(MouseEvent e) {
-					int casillaX = e.getX() / (atlas.getSubancho() * jpEntorno.getgFactorEscalado());
-					int casillaY = e.getY() / (atlas.getSubalto() * jpEntorno.getgFactorEscalado());
-
-					if (casillaX > 0 && casillaX < jpEntorno.getAlto() - 1 && casillaY > 0 && casillaY < jpEntorno.getAncho() - 1) {
-						if (canPaint) // Izquierdo
-						// Cambiar celda
-						{
-							/*if (canAddPared) {
-								jpEntorno.cambiarAPared(casillaX, casillaY);
-							} else if (canRemovePared) {
-								jpEntorno.cambiarASuelo(casillaX, casillaY);
-							}*/
-						}
-					}
-				}
-
-				@Override
-				public void mouseMoved(MouseEvent e) {
 				}
 			});
 
@@ -424,7 +351,7 @@ public class Monstruo {
 				framerate = jslTicks.getValue();
 			});
 
-			// Parar o iniciar robot
+			// Parar/iniciar robot
 			jbMoving.addActionListener((ActionEvent ae) -> {
 				isMoving = !isMoving;
 				if (isMoving) {
@@ -432,63 +359,48 @@ public class Monstruo {
 				} else {
 					jbMoving.setText(START);
 				}
+				
+				// Deshabilitar los botones de añadir/quitar elementos cuando el juego se inicia el juego
+				for(JButton btn : botones) {
+					btn.setEnabled(false);
+				}
 			});
-
-			// Indicar que se pintarán paredes
-			jbAddWall.addActionListener((ActionEvent ae) -> {
-				// Habilitar todos los botones menos el actual
-				jbAddWall.setEnabled(false);
-				jbRemoveWall.setEnabled(true);
-				jbAddAgent.setEnabled(true);
-				jbRemoveAgent.setEnabled(true);
-
-				canAddPared = true;
-				canRemovePared = false;
-				canAddAgente = false;
-				canRemoveAgente = false;
+			
+			// Ver/ocultar percepciones
+			jbPercep.addActionListener((ActionEvent ae) -> {
+				viewPercep = !viewPercep;
+				if(viewPercep) {
+					jbPercep.setText(HIDE_PERC);
+				} else {
+					jbPercep.setText(VIEW_PERC);
+				}
+				jpEntorno.verPercepciones(viewPercep);
 			});
-
-			// Indicar que se borrarán paredes
-			jbRemoveWall.addActionListener((ActionEvent ae) -> {
-				// Habilitar todos los botones menos el actual
-				jbAddWall.setEnabled(true);
-				jbRemoveWall.setEnabled(false);
-				jbAddAgent.setEnabled(true);
-				jbRemoveAgent.setEnabled(true);
-
-				canAddPared = false;
-				canRemovePared = true;
-				canAddAgente = false;
-				canRemoveAgente = false;
+			
+			// Avanzar un ciclo
+			jbStep.addActionListener((ActionEvent) ->{
+				doStep = true;
+				
+				// Deshabilitar los botones de añadir/quitar elementos cuando el juego se inicia el juego
+				for(JButton btn : botones) {
+					btn.setEnabled(false);
+				}
 			});
-
-			// Indicar que se añadirá un agente
-			jbAddAgent.addActionListener((ActionEvent ae) -> {
-				// Habilitar todos los botones menos el actual
-				jbAddWall.setEnabled(true);
-				jbRemoveWall.setEnabled(true);
-				jbAddAgent.setEnabled(false);
-				jbRemoveAgent.setEnabled(true);
-
-				canAddPared = false;
-				canRemovePared = false;
-				canAddAgente = true;
-				canRemoveAgente = false;
-			});
-
-			// Eliminar un agente al entorno
-			jbRemoveAgent.addActionListener((ActionEvent ae) -> {
-				// Habilitar todos los botones menos el actual
-				jbAddWall.setEnabled(true);
-				jbRemoveWall.setEnabled(true);
-				jbAddAgent.setEnabled(true);
-				jbRemoveAgent.setEnabled(false);
-
-				canAddPared = false;
-				canRemovePared = false;
-				canAddAgente = false;
-				canRemoveAgente = true;
-			});
+			
+			
+			// Eventos de los botones del panel del panel de herramientas.
+			// (Se utiliza un array de botones para no tener el mismo texto tantas veces como botones haya en él)
+			for(int i = 0; i < botones.size(); i++) {
+				JButton actual = botones.get(i);
+				ActionListener al;
+				// Crea y añadir el evento del botón
+				al = (ActionEvent e) -> {
+					// Cambiar color e indicar la acción que se realizará en el entorno
+					btnCambiarColor(actual);
+				};
+				
+				actual.addActionListener(al);
+			}
 
 			/**
 			 * *********************************************************************************************************
@@ -503,8 +415,13 @@ public class Monstruo {
 				jpEntorno.setgFactorEscalado(uw, uh);
 
 				// CALCULO //
-				if (isMoving) {
+				if (isMoving || doStep) {
 					jpEntorno.ciclo();
+				}
+				
+				// Para el 'Siguiente paso' cuando hayan pasod 32 ciclos
+				if(jpEntorno.getCiclos() % 32 == 0) {
+					doStep = false;
 				}
 
 				// PINTADO //
@@ -519,6 +436,38 @@ public class Monstruo {
 			}
 		} catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
 			Logger.getLogger(Monstruo.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public static void main(String[] args) {
+		Monstruo monstruo = new Monstruo();
+	}
+
+	/**
+	 * Metodo para cambiar la acción en el entorno y los colores de los botones.
+	 * @param btn Botón seleccionado.
+	 */
+	private void btnCambiarColor(JButton btn) {
+		for (int i = 0; i < botones.size(); i++) {
+			JButton actual = botones.get(i);
+			
+			// Cambiar el color e indicar la acción que se realizará.
+			// Las acciones están mapeadas en el mismo orden que los botones (se puede utilizar el mismo índice)
+			if (actual == btn) {
+				actual.setBackground(Color.GREEN);
+				// Necesario para poder cambiar el color
+				actual.setOpaque(true);
+				actual.setBorderPainted(false);
+				
+				estado_btn[i] = true;
+			} else {
+				actual.setBackground(new Color(240, 240, 240));
+				actual.setOpaque(true);
+				// Si no se vuelve a cambiar el valor a true, el fondo de los botones se elimina.
+				actual.setBorderPainted(true);
+				
+				estado_btn[i] = false;
+			}
 		}
 	}
 }

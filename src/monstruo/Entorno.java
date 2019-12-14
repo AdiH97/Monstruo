@@ -31,6 +31,10 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int MAX_AGENTES = 4;
 	private final int numAgentes;
 	private final Agente[] agentes;
+	
+	// contadores //
+	private int numTesoros;
+	private int numMonstruos;
 
 	public Entorno(Atlas gAtlas, int ancho, int alto) {
 		ciclos = 0;
@@ -69,6 +73,8 @@ public class Entorno extends JPanel implements Ciclico {
 		}
 
 		numAgentes = 1;
+		numMonstruos = 0;
+		numTesoros = 0;
 	}
 
 	private int get(int x, int y) {
@@ -214,6 +220,40 @@ public class Entorno extends JPanel implements Ciclico {
 
 	public Agente[] getAgentes() {
 		return agentes;
+	}
+	
+	public int getNumAgentes() {
+		return numAgentes;
+	}
+	
+	public void addElemento (int x, int y, int elemento) {
+		if(mapa[x][y] == NADA) {
+			mapa[x][y] = elemento;
+		}
+		
+		// Incremenetar contadores
+		if(elemento == TESORO) numTesoros++;
+		if(elemento == MONSTRUO) numMonstruos++;
+	}
+	
+	public void removeElemento (int x, int y, int elemento) {
+		if(mapa[x][y] == elemento) {
+			mapa[x][y] = NADA;
+		}
+		
+		// Decrementar contadores
+		if(elemento == TESORO) numTesoros--;
+		if(elemento == MONSTRUO) numMonstruos--;
+	}
+	
+	public void verPercepciones(boolean b) {
+		for(Agente a : agentes) {
+			a.setVerPercepciones(b);
+		}
+	}
+	
+	public int getCiclos() {
+		return ciclos;
 	}
 
 }

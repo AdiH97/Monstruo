@@ -7,12 +7,12 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
-public class PanelDebugAgente extends JPanel {
+public class PanelDebug extends JPanel {
 
 	private static final int SIZE = 8;
 	private final Agente agente;
 
-	public PanelDebugAgente(Agente agente) {
+	public PanelDebug(Agente agente) {
 		this.agente = agente;
 	}
 

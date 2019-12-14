@@ -12,6 +12,7 @@ public class Agente implements Ciclico {
 	private static final Color COLOR_POSIBLEPRECIPICIO = new Color(0, 255, 255, OPACIDAD_DEBUG);
 
 	private int ciclos;
+	private boolean verPercepciones;
 
 	// gráficos //
 	private final Atlas gAtlas;
@@ -37,6 +38,7 @@ public class Agente implements Ciclico {
 
 	public Agente(Atlas gAtlas, int gIndiceTextura, int ancho, int alto, int x, int y) {
 		ciclos = 0;
+		verPercepciones = false;
 		this.gAtlas = gAtlas;
 		this.gIndiceTextura = gIndiceTextura;
 		gX = x * gAtlas.getSubancho();
@@ -184,9 +186,9 @@ public class Agente implements Ciclico {
 					// si no hemos disparado ya en esa dirección y hay un M. o P.M. allí pues
 					// disparamos
 					if (mapa[getY()][getX()] != null
-						&& !mapa[getY()][getX()].get(Estado.DISPARADO_NORTE + ii)
-						&& mapa[row][col] != null
-						&& (mapa[row][col].get(Estado.MONSTRUO)
+							&& !mapa[getY()][getX()].get(Estado.DISPARADO_NORTE + ii)
+							&& mapa[row][col] != null
+							&& (mapa[row][col].get(Estado.MONSTRUO)
 							|| mapa[row][col].get(Estado.POSIBLE_MONSTRUO))) {
 						accion = 4 + ii;
 						mapa[getY()][getX()].set(Estado.DISPARADO_NORTE + ii);
@@ -257,25 +259,27 @@ public class Agente implements Ciclico {
 
 	public void pintar(Graphics g, int escala) {
 
-		for (int i = 0; i < ancho; i++) {
-			for (int j = 0; j < alto; j++) {
-				g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
-				if (mapa[i][j] != null) {
-					if (mapa[i][j].get(Estado.MONSTRUO)) {
-						g.setColor(COLOR_MONSTRUO);
-						g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
-					} else if (mapa[i][j].get(Estado.POSIBLE_MONSTRUO)) {
-						g.setColor(COLOR_POSIBLEMONSTRUO);
-						g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
-					} else if (mapa[i][j].get(Estado.POSIBLE_PRECIPICIO)) {
-						g.setColor(COLOR_POSIBLEPRECIPICIO);
-						g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
-					} else if (mapa[i][j].get(Estado.PRECIPICIO)) {
-						g.setColor(new Color(0, 0, 0, 255));
-						g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
-					} else {
-						g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
-						g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
+		if (verPercepciones) {
+			for (int i = 0; i < ancho; i++) {
+				for (int j = 0; j < alto; j++) {
+					g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
+					if (mapa[i][j] != null) {
+						if (mapa[i][j].get(Estado.MONSTRUO)) {
+							g.setColor(COLOR_MONSTRUO);
+							g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
+						} else if (mapa[i][j].get(Estado.POSIBLE_MONSTRUO)) {
+							g.setColor(COLOR_POSIBLEMONSTRUO);
+							g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
+						} else if (mapa[i][j].get(Estado.POSIBLE_PRECIPICIO)) {
+							g.setColor(COLOR_POSIBLEPRECIPICIO);
+							g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
+						} else if (mapa[i][j].get(Estado.PRECIPICIO)) {
+							g.setColor(new Color(0, 0, 0, 255));
+							g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
+						} else {
+							g.setColor(new Color(0, 128, 255, OPACIDAD_DEBUG));
+							g.fillRect(i * gAtlas.getSubancho() * escala, j * gAtlas.getSubalto() * escala, gAtlas.getSubancho() * escala, gAtlas.getSubalto() * escala);
+						}
 					}
 				}
 			}
@@ -286,7 +290,7 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 
@@ -326,4 +330,7 @@ public class Agente implements Ciclico {
 		return STARTY;
 	}
 
+	public void setVerPercepciones(boolean b) {
+		verPercepciones = b;
+	}
 }
