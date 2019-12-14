@@ -19,18 +19,6 @@ public class Atlas {
 		columnas = imagen.getWidth() / subancho;
 	}
 
-	public void pintarTextura(Graphics g, int x, int y, int indice) {
-		int dx1 = x;
-		int dy1 = y;
-		int dx2 = x + subancho;
-		int dy2 = y + subalto;
-		int sx1 = (indice % columnas) * subancho;
-		int sy1 = (indice / columnas) * subalto;
-		int sx2 = sx1 + subancho;
-		int sy2 = sy1 + subalto;
-		g.drawImage(imagen, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null);
-	}
-	
 	public void pintarTexturaEscala(Graphics g, int x, int y, int indice, int escala) {
 		int dx1 = x * escala;
 		int dy1 = y * escala;
