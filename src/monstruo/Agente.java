@@ -57,9 +57,11 @@ public class Agente implements Ciclico {
 		STARTX = x;
 		STARTY = y;
 	}
-	
-	public boolean tesoros_encontrados () {
-		return num_tesoros_encontrados == max_tesoros;
+
+	public boolean tesoros_encontrados() {
+		return num_tesoros_encontrados == max_tesoros
+				&& // apaño temporal //
+				max_tesoros != 0;
 	}
 
 	public void calcularAccion() {
@@ -83,16 +85,16 @@ public class Agente implements Ciclico {
 		// TODO: Usar el movimiento prohibido en lugar de comprobar las paredes
 		int prohibido = Acciones.NINGUNA;
 
+		// GOLPE
+		if (entorno_golpe) {
+			// Indicar al agente que no siga avanzando en la misma dirección
+			prohibido = accionp;
+		}
+
 		// Por cada casilla que envuelve al agente
 		for (int i = 0; i < offset.length; i++) {
 			int casilla_y = getY() + offset[i][0];
 			int casilla_x = getX() + offset[i][1];
-
-			// GOLPE
-			if (entorno_golpe) {
-				// Indicar al agente que no siga avanzando en la misma dirección
-				prohibido = accionp;
-			}
 
 			// HEDOR
 			if (entorno_hedor) {
@@ -144,12 +146,6 @@ public class Agente implements Ciclico {
 						mapa[casilla_x][casilla_y] = null;
 					}
 				}
-			}
-
-			// RESPLANDOR
-			if (entorno_resplandor) {
-				num_tesoros_encontrados++;
-				System.out.println("Tesoros encontrado. Faltan " + (max_tesoros - num_tesoros_encontrados));
 			}
 		}
 
@@ -208,9 +204,18 @@ public class Agente implements Ciclico {
 					// Volver atrás
 					accion = pilaAcciones.pop();
 				}
-
 			}
 		}
+		
+		// RESPLANDOR
+		if (entorno_resplandor) {
+			num_tesoros_encontrados++;
+			// Apaño para que no tenga en cuenta el ciclo extra de quedarse quieto
+			pilaAcciones.pop();
+			accion = Acciones.RECOGER_TESORO;
+			System.out.println("Tesoros encontrado. Faltan " + (max_tesoros - num_tesoros_encontrados));
+		}
+		
 		accionpp = accionp;
 		accionp = accion;
 	}
@@ -334,10 +339,10 @@ public class Agente implements Ciclico {
 		return STARTY;
 	}
 
-  public void setVerPercepciones(boolean b) {
+	public void setVerPercepciones(boolean b) {
 		verPercepciones = b;
 	}
-	
+
 	public void setMaxTesoros(int max) {
 		max_tesoros = max;
 	}

@@ -31,7 +31,7 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int MAX_AGENTES = 4;
 	private final int numAgentes;
 	private final Agente[] agentes;
-	
+
 	// contadores //
 	private int numTesoros;
 	private int numMonstruos;
@@ -73,7 +73,7 @@ public class Entorno extends JPanel implements Ciclico {
 			agentes[i].setMaxTesoros(numTesoros);
 		}
 
-		numAgentes = 4;
+		numAgentes = 1;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -106,20 +106,22 @@ public class Entorno extends JPanel implements Ciclico {
 			int y = a.getY();
 
 			// CÓDIGO ENTORNO //
-			// si el agente no ha encontrado todos los tesoros & no está en la casilla de salida //
-			if (!(a.tesoros_encontrados()&& x == a.getStartX() && y == a.getStartY())) {
+			if (ciclos % 32 == 0) {
 
-				if (ciclos % 32 == 0) {
+				// si el agente no ha encontrado todos los tesoros & no está en la casilla de salida //
+				if (!(a.tesoros_encontrados() && x == a.getStartX() && y == a.getStartY())) {
 
 					// posición del agente y última acción del agente //
 					int accionp = a.getAccionp();
 
-					// processar disparos
-					if (accionp >= 4) {
+					if (accionp == Acciones.RECOGER_TESORO) {
+						this.set(x, y, NADA);
+					} // processar disparos
+					else if (accionp >= 4) {
 						int balaX = x;
 						int balaY = y;
 						while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-							   && mapa[balaX][balaY] != MONSTRUO) {
+								&& mapa[balaX][balaY] != MONSTRUO) {
 							balaX += X_OFFSET[accionp % 4];
 							balaY += Y_OFFSET[accionp % 4];
 							if (mapa[balaX][balaY] == MONSTRUO) {
@@ -141,8 +143,9 @@ public class Entorno extends JPanel implements Ciclico {
 					p.set(Percepciones.GOLPE, g);
 
 					a.calcularAccion();
+
 				} else {
-					mapa[x][y] = NADA;
+					System.err.println("FIN");
 				}
 			}
 			// CÓDIGO ENTORNO (FIN) //
@@ -223,47 +226,51 @@ public class Entorno extends JPanel implements Ciclico {
 	public Agente[] getAgentes() {
 		return agentes;
 	}
-	
+
 	public int getNumAgentes() {
 		return numAgentes;
 	}
-	
-	public void addElemento (int x, int y, int elemento) {
-		if(mapa[x][y] == NADA) {
+
+	public void addElemento(int x, int y, int elemento) {
+		if (mapa[x][y] == NADA) {
 			mapa[x][y] = elemento;
-		}
-		
-		// Incremenetar contadores
-		if(elemento == TESORO) {
-			numTesoros++;
-			for(Agente a: agentes) {
-				a.setMaxTesoros(numTesoros);
+
+			// Incremenetar contadores
+			if (elemento == TESORO) {
+				numTesoros++;
+				for (Agente a : agentes) {
+					a.setMaxTesoros(numTesoros);
+				}
+			}
+			if (elemento == MONSTRUO) {
+				numMonstruos++;
 			}
 		}
-		if(elemento == MONSTRUO) numMonstruos++;
 	}
-	
-	public void removeElemento (int x, int y, int elemento) {
-		if(mapa[x][y] == elemento) {
+
+	public void removeElemento(int x, int y, int elemento) {
+		if (mapa[x][y] == elemento) {
 			mapa[x][y] = NADA;
-		}
-		
-		// Decrementar contadores
-		if(elemento == TESORO) {
-			numTesoros--;
-			for(Agente a: agentes) {
-				a.setMaxTesoros(numTesoros);
+
+			// Decrementar contadores
+			if (elemento == TESORO) {
+				numTesoros--;
+				for (Agente a : agentes) {
+					a.setMaxTesoros(numTesoros);
+				}
+			}
+			if (elemento == MONSTRUO) {
+				numMonstruos--;
 			}
 		}
-		if(elemento == MONSTRUO) numMonstruos--;
 	}
-	
+
 	public void verPercepciones(boolean b) {
-		for(Agente a : agentes) {
+		for (Agente a : agentes) {
 			a.setVerPercepciones(b);
 		}
 	}
-	
+
 	public int getCiclos() {
 		return ciclos;
 	}
