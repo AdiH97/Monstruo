@@ -251,8 +251,9 @@ public class Monstruo {
 			
 			gbc_db.gridx = 1;
 			gbc_db.gridy = 2;
-			gbc_db.gridheight = 1;
+			gbc_db.gridheight = 2;
 			gbc_db.gridwidth = 3;
+			gbc_db.ipady = 20;
 			jpControl.add(pd, gbc_db);
 			
 			/**

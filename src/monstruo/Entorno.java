@@ -132,7 +132,7 @@ public class Entorno extends JPanel implements Ciclico {
 				// posición del agente y última acción del agente //
 				int accionp = a.getAccionp();
 
-				if (accionp == Acciones.RECOGER_TESORO) {
+				/*if (accionp == Acciones.RECOGER_TESORO) {
 					this.set(x, y, NADA);
 				} // processar disparos
 				else if (accionp >= 4) {
@@ -147,7 +147,7 @@ public class Entorno extends JPanel implements Ciclico {
 							break;
 						}
 					}
-				}
+				}*/
 
 				Percepciones p = a.getPercepciones();
 				boolean h, b, r, g;

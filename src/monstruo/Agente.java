@@ -6,6 +6,20 @@ import java.util.Stack;
 
 public class Agente implements Ciclico {
 
+	int X_HOFFSET[][][] = {
+		{{+1, 0}, {+1, -1}, {-1, 0}},
+		{{+1, +2}, {+1, +1}, {-1, +2}},
+		{{-1, 0}, {-1, +1}, {+1, 0}},
+		{{-1, -2}, {-1, -1}, {-1, -2}}
+	};
+
+	int Y_HOFFSET[][][] = {
+		{{-1, -2}, {-1, -1}, {-1, -2}},
+		{{+1, 0}, {+1, -1}, {-1, 0}},
+		{{+1, +2}, {+1, +1}, {+1, +2}},
+		{{-1, 0}, {-1, +1}, {+1, 0}}
+	};
+
 	private static final int OPACIDAD_DEBUG = 192;
 	private static final Color COLOR_MONSTRUO = new Color(255, 0, 0, OPACIDAD_DEBUG);
 	private static final Color COLOR_POSIBLEMONSTRUO = new Color(255, 128, 0, OPACIDAD_DEBUG);
@@ -35,6 +49,8 @@ public class Agente implements Ciclico {
 	// pila de movimientos inversos //
 	private final Stack<Integer> pilaAcciones;
 
+	private int X, Y;
+
 	private int accion, accionp, accionpp;
 
 	public Agente(Atlas gAtlas, int gIndiceTextura, int ancho, int alto, int x, int y) {
@@ -50,174 +66,195 @@ public class Agente implements Ciclico {
 		this.alto = alto;
 		percepciones = new Percepciones();
 		mapa = new Estado[ancho][alto];
-		accion = accionp = Acciones.MOVERSE_NORTE;
+		accion = accionp = Acciones.DESPLAZARSE_NORTE;
 		pilaAcciones = new Stack<>();
 		num_proyectiles = 0;
 		num_tesoros_encontrados = 0;
 		STARTX = x;
 		STARTY = y;
+		X = x;
+		Y = y;
+	}
+
+	private void set(int x, int y, int clave) {
+		if (mapa[x][y] == null) {
+			mapa[x][y] = new Estado();
+		}
+		mapa[x][y].set(clave);
+	}
+
+	private void clear(int x, int y, int clave) {
+		if (mapa[x][y] != null) {
+			mapa[x][y].clear(clave);
+		}
+	}
+
+	private boolean get(int x, int y, int clave) {
+		if (mapa[x][y] == null) {
+			return false;
+		} else {
+			return mapa[x][y].get(clave);
+		}
 	}
 
 	public void calcularAccion() {
-		// crear la casilla
-		mapa[getX()][getY()] = new Estado();
+		final int[] X_OFFSET = {0, 1, 0, -1};
+		final int[] Y_OFFSET = {-1, 0, 1, 0};
+		X = getX();
+		Y = getY();
+		Percepciones p = getPercepciones();
+		boolean H = p.get(Percepciones.HEDOR);
+		boolean B = p.get(Percepciones.BRISA);
+		boolean R = p.get(Percepciones.RESPLANDOR);
+		boolean G = p.get(Percepciones.GOLPE);
 
-		// Percepciones captadas del ambiente
-		boolean entorno_hedor = percepciones.get(Percepciones.HEDOR);
-		boolean entorno_brisa = percepciones.get(Percepciones.BRISA);
-		boolean entorno_resplandor = percepciones.get(Percepciones.RESPLANDOR);
-		boolean entorno_golpe = percepciones.get(Percepciones.GOLPE);
+		this.set(X, Y, Estado.VISITADA);
+		accion = Acciones.NINGUNA;
 
-		// norte, este, sud, oeste [y, x]
-		int offset[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
-		/**
-		 * 1. INFERIR CASILLAS ENVOLVENTES CON LAS PERCEPCIONES ACTUALES
-		 *
-		 */
-		// Accion que lleva hacia una pared
-		// TODO: Usar el movimiento prohibido en lugar de comprobar las paredes
-		int prohibido = Acciones.NINGUNA;
-
-		// GOLPE
-		if (entorno_golpe) {
-			// Indicar al agente que no siga avanzando en la misma dirección
-			prohibido = accionp;
+		// *************** //
+		// PARTE DEDUCTIVA //
+		// *************** //
+		// H => Hi,j
+		if (H) {
+			this.set(X, Y, Estado.HEDOR);
 		}
 
-		// Por cada casilla que envuelve al agente
-		for (int i = 0; i < offset.length; i++) {
-			int casilla_y = getY() + offset[i][0];
-			int casilla_x = getX() + offset[i][1];
-
-			// HEDOR
-			if (entorno_hedor) {
-				// Si la casilla no ha sido visitada, posible monstruo
-				if (mapa[casilla_x][casilla_y] == null) {
-					// Y si la casilla no es una pared
-					if (casilla_y != 0 && casilla_y != ancho - 1 && casilla_x != 0 && casilla_x != alto - 1) {
-						// Indicar que hay un posible monstruo
-						mapa[casilla_x][casilla_y] = new Estado();
-						mapa[casilla_x][casilla_y].set(Estado.POSIBLE_MONSTRUO);
-					}
-				} else { // si no, monstruo "seguro"
-					// Si en la casilla hay la percepción de un posible monstruo, es que antes se
-					// había detectado hedor en
-					// otra casilla que la envuelve. Por lo tanto, en esta casilla hay un monstruo.
-					if (mapa[casilla_x][casilla_y].get(Estado.POSIBLE_MONSTRUO) && !mapa[casilla_x][casilla_y].get(Estado.NO_MONSTRUO)) {
-						mapa[casilla_x][casilla_y].set(Estado.MONSTRUO);
-					}
-				}
-			} else {
-				// Si no se ha percibido hedor en la casilla actual, evaluar las casillas con posibles monstruos
-				if (mapa[casilla_x][casilla_y] != null) {
-					// Si se he detectado un posible monstruo y no hay hedor en las casillas adyacentes, es seguro decir
-					// que no hay monstruo
-					if (mapa[casilla_x][casilla_y].get(Estado.POSIBLE_MONSTRUO)) {
-						mapa[casilla_x][casilla_y] = null;
-					}
-				}
+		//H && !Mi,j-1 && !Vi,j-1 => W?i,j-1
+		//H && !Mi+1,j && !Vi+1,j => W?i+1,j
+		//H && !Mi,j+1 && !Vi,j+1 => W?i,j+1
+		//H && !Mi-1,j  && !Vi-1,j => W?i-1,j
+		for (int i = 0; i < 4; i++) {
+			if (H
+				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
+				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)) {
+				this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
 			}
+		}
 
-			// BRISA (Igual que el monstruo)
-			if (entorno_brisa) {
-				if (mapa[casilla_x][casilla_y] == null) {
-					if (casilla_y != 0 && casilla_y != ancho - 1 && casilla_x != 0 && casilla_x != alto - 1) {
-						mapa[casilla_x][casilla_y] = new Estado();
-						mapa[casilla_x][casilla_y].set(Estado.POSIBLE_PRECIPICIO);
-					}
-				} else {
-					if (mapa[casilla_x][casilla_y].get(Estado.POSIBLE_PRECIPICIO)) {
-						mapa[casilla_x][casilla_y].set(Estado.PRECIPICIO);
-					}
-				}
-			} else {
-				// Si no se ha percibido hedor en la casilla actual, evaluar las casillas con posibles monstruos
-				if (mapa[casilla_x][casilla_y] != null) {
-					// Si se he detectado un posible monstruo y no hay hedor en las casillas adyacentes, es seguro decir
-					// que no hay monstruo
-					if (mapa[casilla_x][casilla_y].get(Estado.POSIBLE_PRECIPICIO)) {
-						mapa[casilla_x][casilla_y] = null;
+		// INFERIR W (CONSULTAR DOCUMENTACIÓN)
+		if (H) {
+			for (int i = 0; i < 4; i++) {
+				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)) {
+					for (int j = 0; j < 3; j++) {
+						if (this.get(X + X_HOFFSET[i][j][0], Y + Y_HOFFSET[i][j][0], Estado.HEDOR)
+							&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.HEDOR)) {
+							this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO);
+							this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO);
+						}
 					}
 				}
 			}
 		}
 
-		/**
-		 * 2. REALIZAR ACCIÓN CON LA BC Y LAS PERCEPCIONES ACTUALES
-		 *
-		 */
-		int posible_accion = Acciones.NINGUNA;
-		for (int i = 0; i < offset.length; i++) {
-			int casilla_y = getY() + offset[i][0];
-			int casilla_x = getX() + offset[i][1];
+		// B => Bi,j
+		if (B) {
+			this.set(X, Y, Estado.BRISA);
+		}
 
-			// Comprobar que la casilla no sea una pared
-			if (casilla_y != 0 && casilla_y != ancho - 1 && casilla_x != 0 && casilla_x != alto - 1) {
-				if (mapa[casilla_x][casilla_y] == null) {
-					// Ir hacia la casilla vacía
-					posible_accion = i; // ya que el índice del offset coincide con el enum del movimiento correspondiente
+		//B && !Mi,j-1 && !Vi, j-1 => P?i,j-1
+		//B && !Mi+1,j && !Vi+1, j  => P?i+1,j
+		//B && !Mi,j+1 && !Vi, j+1 => P?i,j+1
+		//B && !Mi-1,j && !Vi-1, j  => P?i-1,j
+		for (int i = 0; i < 4; i++) {
+			if (B
+				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.VISITADA)
+				&& !this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MURO)) {
+				this.set(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
+			}
+		}
+
+		// INFERIR B (CONSULTAR DOCUMENTACIÓN)
+		if (B) {
+			for (int i = 0; i < 4; i++) {
+				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)) {
+					for (int j = 0; j < 3; j++) {
+						if (this.get(X + X_HOFFSET[i][j][0], Y + Y_HOFFSET[i][j][0], Estado.BRISA)
+							&& this.get(X + X_HOFFSET[i][j][1], Y + Y_HOFFSET[i][j][1], Estado.BRISA)) {
+							this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO);
+							this.clear(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO);
+						}
+					}
 				}
 			}
 		}
 
-		// Ir hacia la casilla vacía
-		if (posible_accion != Acciones.NINGUNA) {
-			accion = posible_accion;
-			// Guardar en la pila la acción contraria
-			if (accion < 4) {
-				pilaAcciones.push((accion + 2) % 4);
-			}
-		} else {
-			// Intentamos disparar
-			boolean disparado = false;
-			for (int ii = 0; ii < 4; ii++) {
-				// pos Monstruo y PosibleMonstruo
-				int row = getY() + offset[ii][0];
-				int col = getX() + offset[ii][1];
+		// Ri,j => Ti,j
+		if (R) {
+			this.set(X, Y, Estado.TESORO);
+		}
 
-				// si no hemos disparado ya en esa dirección y hay un M. o P.M. allí pues
-				// disparamos
-				if (mapa[getX()][getY()] != null
-						&& !mapa[getX()][getY()].get(Estado.DISPARADO_NORTE + ii)
-						&& mapa[col][row] != null
-						&& (mapa[col][row].get(Estado.MONSTRUO)
-						|| mapa[col][row].get(Estado.POSIBLE_MONSTRUO))
-						&& num_proyectiles > 0) {
-					accion = 4 + ii;
-					mapa[getX()][getY()].set(Estado.DISPARADO_NORTE + ii);
-					
-					// Si hemos disparado en esta dirección, seguro que el monstruo estará muerto. Por lo tanto, se puede
-					// avanzar
-					mapa[col][row].clear(Estado.POSIBLE_MONSTRUO);
-					mapa[col][row].clear(Estado.MONSTRUO);
-					mapa[col][row].set(Estado.NO_MONSTRUO);
-					
-					disparado = true;
-					num_proyectiles--;
+		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
+		if (G && accionp == Acciones.DESPLAZARSE_NORTE) {
+			for (int j = 0; j < ancho; j++) {
+				this.set(j, Y - 1, Estado.MURO);
+			}
+		}
+
+		// Gi,j && At-1 = ESTE => Mi+1,0 && Mi+1,1 … Mi+1,m
+		if (G && accionp == Acciones.DESPLAZARSE_ESTE) {
+			for (int j = 0; j < alto; j++) {
+				this.set(X + 1, j, Estado.MURO);
+			}
+		}
+
+		// Gi,j && At-1 = SUR => M0,j+1 && M1,j+1 … Mn,j+1
+		if (G && accionp == Acciones.DESPLAZARSE_SUR) {
+			for (int j = 0; j < ancho; j++) {
+				this.set(j, Y + 1, Estado.MURO);
+			}
+		}
+
+		// Gi,j && At-1 = OESTE => Mi-1,0 && Mi-1,1 … Mi-1,m
+		if (G && accionp == Acciones.DESPLAZARSE_OESTE) {
+			for (int j = 0; j < alto; j++) {
+				this.set(X - 1, j, Estado.MURO);
+			}
+		}
+
+		// ************** //
+		// PARTE REACTIVA //
+		// ************** //
+		// Ti,j => RECOGER_TESORO
+		if (this.get(X, Y, Estado.TESORO)) {
+			accion = Acciones.RECOGER_TESORO;
+		} // Mi,j-1 && At-1 = DESPLAZARSE_NORTE => DESPLAZARSE_ESTE
+		// Mi+1,j && At-1 = DESPLAZARSE_ESTE => DESPLAZARSE_SUR
+		// Mi,j+1 && At-1 = DESPLAZARSE_SUR => DESPLAZARSE_OESTE
+		// Mi-1,j && At-1 = DESPLAZARSE_OESTE => DESPLAZARSE_SUR
+		else if (this.get(X + X_OFFSET[accionp], Y + Y_OFFSET[accionp], Estado.MURO)) {
+			accion = (accionp + 1) % 4;
+			pilaAcciones.push(accion);
+		} // NILi, j-1 => DESPLAZARSE_NORTE
+		// NILi+1, j => DESPLAZARSE_ESTE
+		// NILi, j+1 => DESPLAZARSE_SUD
+		// NILi-1, j => DESPLAZARSE_OESTE
+		else {
+			for (int i = 0; i < 4; i++) { // TODO puede que tenga que ir al final
+				if (mapa[X + X_OFFSET[i]][Y + Y_OFFSET[i]] == null) {
+					accion = i;
+					pilaAcciones.push(accion);
 					break;
 				}
 			}
 
-			if (!disparado) {
-				// Volver atrás
-				if (!pilaAcciones.empty()) {
+			// W?i, j-1 || W?i+1,j || W?i, j+1 || W?i-1, j => POP()
+			// P?i, j-1 || P?i+1,j || P?i, j+1 || P?i-1, j => POP()
+			// Pi, j-1 || Pi+1,j || Pi, j+1 || Pi-1, j => POP()
+			for (int i = 0; i < 4 && accion != Acciones.NINGUNA; i++) {
+				if (this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_MONSTRUO)
+					|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.POSIBLE_PRECIPICIO)
+					|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.PRECIPICIO)
+					|| this.get(X + X_OFFSET[i], Y + Y_OFFSET[i], Estado.MONSTRUO)) {
 					accion = pilaAcciones.pop();
-				} else {
-					accion = Acciones.NINGUNA;
+					break;
 				}
+			}
+
+			if (accion == Acciones.NINGUNA) {
+				accion = Acciones.DESPLAZARSE_NORTE;
 			}
 		}
 
-		// RESPLANDOR
-		if (entorno_resplandor) {
-			num_tesoros_encontrados++;
-			// Apaño para que no tenga en cuenta el ciclo extra de quedarse quieto
-			pilaAcciones.pop();
-			accion = Acciones.RECOGER_TESORO;
-		}
-
-		accionpp = accionp;
 		accionp = accion;
 	}
 
@@ -227,19 +264,19 @@ public class Agente implements Ciclico {
 			case 0: // un ciclo propiamente dicho en el entorno, el resto de casos son intraciclo
 				// animación
 				switch (accion) {
-					case Acciones.MOVERSE_NORTE:
+					case Acciones.DESPLAZARSE_NORTE:
 					case Acciones.DISPARAR_NORTE:
 						gDireccion = 1 * 512 / gAtlas.getSubancho();
 						break;
-					case Acciones.MOVERSE_ESTE:
+					case Acciones.DESPLAZARSE_ESTE:
 					case Acciones.DISPARAR_ESTE:
 						gDireccion = 2 * 512 / gAtlas.getSubancho();
 						break;
-					case Acciones.MOVERSE_SUR:
+					case Acciones.DESPLAZARSE_SUR:
 					case Acciones.DISPARAR_SUR:
 						gDireccion = 0 * 512 / gAtlas.getSubancho();
 						break;
-					case Acciones.MOVERSE_OESTE:
+					case Acciones.DESPLAZARSE_OESTE:
 					case Acciones.DISPARAR_OESTE:
 						gDireccion = 3 * 512 / gAtlas.getSubancho();
 						break;
@@ -255,16 +292,16 @@ public class Agente implements Ciclico {
 		// esto se hace siempre
 		// animación
 		switch (accion) {
-			case Acciones.MOVERSE_NORTE:
+			case Acciones.DESPLAZARSE_NORTE:
 				gY -= 1;
 				break;
-			case Acciones.MOVERSE_ESTE:
+			case Acciones.DESPLAZARSE_ESTE:
 				gX += 1;
 				break;
-			case Acciones.MOVERSE_SUR:
+			case Acciones.DESPLAZARSE_SUR:
 				gY += 1;
 				break;
-			case Acciones.MOVERSE_OESTE:
+			case Acciones.DESPLAZARSE_OESTE:
 				gX -= 1;
 				break;
 		}
@@ -304,16 +341,16 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 
 	public int getX() {
-		return (gX + (accion == Acciones.MOVERSE_OESTE ? 31 : 0)) / gAtlas.getSubancho();
+		return (gX + (accion == Acciones.DESPLAZARSE_OESTE ? 31 : 0)) / gAtlas.getSubancho();
 	}
 
 	public int getY() {
-		return (gY + (accion == Acciones.MOVERSE_SUR ? 31 : 0)) / gAtlas.getSubalto();
+		return (gY + (accion == Acciones.DESPLAZARSE_SUR ? 31 : 0)) / gAtlas.getSubalto();
 	}
 
 	public int getAccion() {
@@ -347,7 +384,7 @@ public class Agente implements Ciclico {
 	public void setNumProyectiles(int proyectiles) {
 		num_proyectiles = proyectiles;
 	}
-	
+
 	public int getNumTesorosEncontrados() {
 		return num_tesoros_encontrados;
 	}
