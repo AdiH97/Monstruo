@@ -11,9 +11,6 @@ public class Acciones {
 	public static final int DISPARAR_ESTE = 5;
 	public static final int DISPARAR_SUR = 6;
 	public static final int DISPARAR_OESTE = 7;
-	public static final int HEDOR_NORTE = 8;
-	public static final int HEDOR_ESTE = 9;
-	public static final int HEDOR_SUR = 10;
-	public static final int HEDOR_OESTE = 11;
-	public static final int RECOGER_TESORO = 13;
+	public static final int PRODUCIR_HEDOR = 8;
+	public static final int RECOGER_TESORO = 9;
 }

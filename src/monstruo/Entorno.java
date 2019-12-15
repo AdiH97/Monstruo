@@ -1,5 +1,6 @@
 package monstruo;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -10,7 +11,9 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int[] G_INDICES_AGENTES = {4, 7, 10, 13};
 	private static final int[] X_OFFSET = {0, 1, 0, -1};
 	private static final int[] Y_OFFSET = {-1, 0, 1, 0};
-
+	
+	private static final int DURACION_BOMBAS = 69; // 9 ciclos (-1 del agente)
+	private ArrayList<int[]> bombas;
 	private int ciclos;
 
 	// gráficos //
@@ -23,6 +26,7 @@ public class Entorno extends JPanel implements Ciclico {
 	public static final int PRECIPICIO = 1;
 	public static final int TESORO = 2;
 	public static final int MURO = 3;
+	public static final int HEDOR_FALSO = 4;
 	private final int ancho;
 	private final int alto;
 	private final int[][] mapa;
@@ -71,6 +75,8 @@ public class Entorno extends JPanel implements Ciclico {
 		for (int i = 0; i < agentes.length; i++) {
 			agentes[i] = new Agente(gAtlas, G_INDICES_AGENTES[i], ancho, alto, baseX[i], baseY[i]);
 		}
+		
+		bombas = new ArrayList<>();
 
 		numAgentes = 4;
 		numMonstruos = 0;
@@ -114,7 +120,6 @@ public class Entorno extends JPanel implements Ciclico {
 					num_tesoros = agentes[i].getNumTesorosEncontrados();
 				}
 			}
-
 			System.out.println("Ganador " + agente + ", con " + num_tesoros + " encontrados");
 		}
 	}
@@ -128,6 +133,17 @@ public class Entorno extends JPanel implements Ciclico {
 
 			// CÓDIGO ENTORNO //
 			if (ciclos % 32 == 0) {
+				
+				for(int j = 0; j < bombas.size(); j++) {
+					bombas.get(j)[2]--;
+					
+					if(bombas.get(j)[2] == 0) {
+						int bx = bombas.get(j)[0];
+						int by = bombas.get(j)[1];
+						mapa[bx][by] = NADA;
+						bombas.remove(j);
+					}
+				}
 
 				// posición del agente y última acción del agente //
 				int accionp = a.getAccionp();
@@ -142,7 +158,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-						   && mapa[balaX][balaY] != MONSTRUO) {
+							&& mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
@@ -154,16 +170,24 @@ public class Entorno extends JPanel implements Ciclico {
 				}
 
 				boolean h, b, r, g;
-				h = this.getAdyacentes(x, y).contains(MONSTRUO);
+				h = this.getAdyacentes(x, y).contains(MONSTRUO) || mapa[x][y] == HEDOR_FALSO;
 				b = this.getAdyacentes(x, y).contains(PRECIPICIO);
 				r = (this.get(x, y) == TESORO);
-				g = accionp >= 0 && accionp < 4 && (getColindante(x, y, accionp) == MURO);
 				p.set(Percepciones.HEDOR, h);
 				p.set(Percepciones.BRISA, b);
 				p.set(Percepciones.RESPLANDOR, r);
-				p.set(Percepciones.GOLPE, g);
 
 				a.calcularAccion();
+				
+				int accion = a.getAccion();
+				
+				g = accion >= 0 && accion < 4 && (getColindante(x, y, accion) == MURO);
+				p.set(Percepciones.GOLPE, g);
+				
+				if(accion == Acciones.PRODUCIR_HEDOR) {
+					bombas.add(new int[]{x, y, DURACION_BOMBAS});
+					set(x, y, HEDOR_FALSO);
+				}
 
 				ganador();
 			}
@@ -171,26 +195,7 @@ public class Entorno extends JPanel implements Ciclico {
 
 			a.ciclo();
 
-			/*System.err.println(x + "(" + a.gX + ")" + ", " + y + "(" + a.gY + ") " + a.getAccion());
-			int _x = x * gAtlas.getSubancho() < a.gX ? x + 1: x; // 
-			int _y = y * gAtlas.getSubalto() < a.gY ? y + 1 : y; // Y=1 : _y = 32, gY = 63
-			if (getColindante(_x, _y, a.getAccion()) != MURO) {
-				switch (a.getAccion()) {
-					case Acciones.DESPLAZARSE_NORTE:
-						a.gY -= 1;
-						break;
-					case Acciones.DESPLAZARSE_ESTE:
-						a.gX += 1;
-						break;
-					case Acciones.DESPLAZARSE_SUR:
-						a.gY += 1;
-						break;
-					case Acciones.DESPLAZARSE_OESTE:
-						a.gX -= 1;
-						break;
-				}
-			}*/
-			if (getColindante(x, y, a.getAccion()) != MURO) {
+			if (a.getAccion() >= 0 && a.getAccion() < 4 && getColindante(x, y, a.getAccion()) != MURO) {
 				switch (a.getAccion()) {
 					case Acciones.DESPLAZARSE_NORTE:
 						a.gY -= 1;
@@ -240,11 +245,14 @@ public class Entorno extends JPanel implements Ciclico {
 						indice = 1;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
+					case HEDOR_FALSO:
+						g.setColor(new Color(255, 255, 0, 200));
+						g.fillRect(i * gAtlas.getSubancho() * gFactorEscalado, j * gAtlas.getSubalto() * gFactorEscalado, gAtlas.getSubancho() * gFactorEscalado, gAtlas.getSubalto() * gFactorEscalado);
 				}
 			}
 		}
 
-		for (int i = 0; i < numAgentes; i++) {
+		for (int i = 0; i < 1; i++) {
 			agentes[i].pintar(g, gFactorEscalado);
 		}
 	}

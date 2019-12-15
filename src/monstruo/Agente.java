@@ -2,6 +2,7 @@ package monstruo;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Random;
 import java.util.Stack;
 
 public class Agente implements Ciclico {
@@ -55,6 +56,14 @@ public class Agente implements Ciclico {
 
 	private int accion, accionp, accionpp;
 
+	private static final int MAX_BOMBAS = 3;
+	private static final int MIN_CICLOS = 4;
+	private static final int MAX_CICLOS = 8;
+	private int bombas_restantes;
+	private int ciclos_restantes;
+
+	private Random r;
+
 	public Agente(Atlas gAtlas, int gIndiceTextura, int ancho, int alto, int x, int y) {
 		ciclos = 0;
 		verPercepciones = false;
@@ -83,6 +92,9 @@ public class Agente implements Ciclico {
 		X = x;
 		Y = y;
 		sinConsumir = 1;
+		bombas_restantes = MAX_BOMBAS;
+		r = new Random();
+		ciclos_restantes = r.nextInt(MAX_CICLOS) + MIN_CICLOS;
 	}
 
 	private void set(int x, int y, int clave) {
@@ -171,6 +183,10 @@ public class Agente implements Ciclico {
 		// ¬Ri,j => ¬Ti,j
 		if (!R) {
 			clear(X, Y, Estado.TESORO);
+		}
+
+		if (G) {
+			pilaAcciones.pop();
 		}
 
 		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
@@ -314,9 +330,13 @@ public class Agente implements Ciclico {
 		// ************** //
 		// Ti,j => RECOGER_TESORO
 		if (get(X, Y, Estado.TESORO)) {
+			num_tesoros_encontrados++;
 			accion = Acciones.RECOGER_TESORO;
+		} else if (ciclos_restantes == 0 && bombas_restantes > 0) {
+			bombas_restantes--;
+			accion = Acciones.PRODUCIR_HEDOR;
+			System.out.println("Tirar bombar!!");
 		} else {
-
 			// Monstruo seguro
 			for (int i = 0; i < 4; i++) {
 				int XX = X + X_OFFSET[i];
@@ -330,6 +350,7 @@ public class Agente implements Ciclico {
 				}
 			}
 
+			// Visitar casilla segura
 			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
 				int XX = X + X_OFFSET[i];
 				int YY = Y + Y_OFFSET[i];
@@ -349,7 +370,6 @@ public class Agente implements Ciclico {
 						accion = 4 + i;
 						num_proyectiles--;
 						set(X, Y, Estado.DISPARADO_NORTE + i);
-						// System.out.println("PEW " + num_proyectiles + "==============================================");
 						break;
 					}
 				}
@@ -363,8 +383,18 @@ public class Agente implements Ciclico {
 			}
 		}
 
+		tirarBomba();
 		accionp = accion;
-		// System.err.println("sinConsumir: " + sinConsumir);
+	}
+
+	private void tirarBomba() {
+		if (ciclos_restantes == 0) {
+			ciclos_restantes = r.nextInt(MAX_CICLOS) + MIN_CICLOS;
+		} else {
+			if (ciclos % 32 == 0) {
+				ciclos_restantes--;
+			}
+		}
 	}
 
 	@Override
@@ -434,7 +464,7 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 
