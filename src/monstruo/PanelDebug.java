@@ -73,7 +73,7 @@ public class PanelDebug extends JPanel {
 						g.setColor(Color.BLUE);
 						g.fillRect(x, y, SIZE, SIZE);
 					}
-					if (agente.getMapa()[i][j].get(Estado.VISITADA)) {
+					if (agente.getMapa()[i][j].get(Estado.SIN_CONSUMIR)) {
 						g.setColor(Color.WHITE);
 						g.drawRect(x, y, SIZE - 1, SIZE - 1);
 					}

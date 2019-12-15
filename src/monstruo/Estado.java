@@ -18,7 +18,8 @@ public class Estado {
 	public static final int DISPARADO_ESTE = 13;
 	public static final int DISPARADO_SUR = 14;
 	public static final int DISPARADO_OESTE = 15;
-	public static final int NUM_ESTADOS = 16;
+	public static final int SIN_CONSUMIR = 16;
+	public static final int NUM_ESTADOS = 17;
 
 	private final boolean[] v;
 
@@ -41,6 +42,7 @@ public class Estado {
 			v[MONSTRUO] = false;
 			v[POSIBLE_PRECIPICIO] = false;
 			v[PRECIPICIO] = false;
+			v[SIN_CONSUMIR] = false;
 		}
 		// OK <=> OK_MONSTRUO && OK_PRECIPICIO
 		if (clave == OK || (clave == OK_MONSTRUO && v[OK_PRECIPICIO]) || (clave == OK_PRECIPICIO && v[OK_MONSTRUO])) {
@@ -77,6 +79,19 @@ public class Estado {
 			v[POSIBLE_MONSTRUO] = false;
 			v[POSIBLE_PRECIPICIO] = false;
 			v[PRECIPICIO] = false;
+		}
+		// MURO => ¬VISITADA
+		if (clave == MURO) {
+			v[MURO] = true;
+			v[VISITADA] = false;
+			v[OK] = false;
+			v[OK_MONSTRUO] = false;
+			v[OK_PRECIPICIO] = false;
+			v[POSIBLE_MONSTRUO] = false;
+			v[MONSTRUO] = false;
+			v[POSIBLE_PRECIPICIO] = false;
+			v[PRECIPICIO] = false;
+			v[SIN_CONSUMIR] = false;
 		}
 		v[clave] = true;
 	}

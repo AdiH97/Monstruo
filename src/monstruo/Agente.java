@@ -48,6 +48,8 @@ public class Agente implements Ciclico {
 
 	// pila de movimientos inversos //
 	private final Stack<Integer> pilaAcciones;
+	// contador de casillas por consumir //
+	int sinConsumir;
 
 	private int X, Y;
 
@@ -79,6 +81,7 @@ public class Agente implements Ciclico {
 		STARTY = y;
 		X = x;
 		Y = y;
+		sinConsumir = 1;
 	}
 
 	private void set(int x, int y, int clave) {
@@ -94,6 +97,7 @@ public class Agente implements Ciclico {
 	}
 
 	public void calcularAccion() {
+		
 		final int[] X_OFFSET = {0, 1, 0, -1};
 		final int[] Y_OFFSET = {-1, 0, 1, 0};
 		X = getX();
@@ -105,6 +109,9 @@ public class Agente implements Ciclico {
 		boolean G = p.get(Percepciones.GOLPE);
 		boolean S = p.get(Percepciones.GEMIDO);
 
+		if (!get(X, Y, Estado.VISITADA)) {
+			sinConsumir--;
+		}
 		set(X, Y, Estado.VISITADA);
 		accion = Acciones.NINGUNA;
 
@@ -133,23 +140,23 @@ public class Agente implements Ciclico {
 			// Si se ha disparado un bala y no se ha oido un grito, en toda la fila/columna no hay monstruo
 			switch (accionp) {
 				case Acciones.DISPARAR_NORTE:
-					for (int i = 0; i < ancho; i++) {
-						set(i, Y - 1, Estado.OK_MONSTRUO);
+					for (int i = Y - 1; i > 0; i--) {
+						set(X, i, Estado.OK_MONSTRUO);
 					}
 					break;
 				case Acciones.DISPARAR_ESTE:
-					for (int i = 0; i < alto; i++) {
-						set(i + 1, Y, Estado.OK_MONSTRUO);
+					for (int i = X + 1; i < ancho - 1; i++) {
+						set(i, Y, Estado.OK_MONSTRUO);
 					}
 					break;
 				case Acciones.DISPARAR_SUR:
-					for (int i = 0; i < ancho; i++) {
-						set(i, Y + 1, Estado.OK_MONSTRUO);
+					for (int i = Y + 1; i < alto - 1; i++) {
+						set(X, i, Estado.OK_MONSTRUO);
 					}
 					break;
 				case Acciones.DISPARAR_OESTE:
-					for (int i = 0; i < alto; i++) {
-						set(i - 1, Y, Estado.OK_MONSTRUO);
+					for (int i = X - 1; i > 0; i--) {
+						set(i, Y, Estado.OK_MONSTRUO);
 					}
 					break;
 			}
@@ -168,6 +175,9 @@ public class Agente implements Ciclico {
 		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
 		if (G && accionp == Acciones.DESPLAZARSE_NORTE) {
 			for (int j = 0; j < ancho; j++) {
+				if (get(Y - 1, j, Estado.SIN_CONSUMIR)) {
+					sinConsumir--;
+				}
 				set(j, Y - 1, Estado.MURO);
 			}
 		}
@@ -175,6 +185,9 @@ public class Agente implements Ciclico {
 		// Gi,j && At-1 = ESTE => Mi+1,0 && Mi+1,1 … Mi+1,m
 		if (G && accionp == Acciones.DESPLAZARSE_ESTE) {
 			for (int j = 0; j < alto; j++) {
+				if (get(X + 1, j, Estado.SIN_CONSUMIR)) {
+					sinConsumir--;
+				}
 				set(X + 1, j, Estado.MURO);
 			}
 		}
@@ -182,6 +195,9 @@ public class Agente implements Ciclico {
 		// Gi,j && At-1 = SUR => M0,j+1 && M1,j+1 … Mn,j+1
 		if (G && accionp == Acciones.DESPLAZARSE_SUR) {
 			for (int j = 0; j < ancho; j++) {
+				if (get(Y + 1, j, Estado.SIN_CONSUMIR)) {
+					sinConsumir--;
+				}
 				set(j, Y + 1, Estado.MURO);
 			}
 		}
@@ -189,6 +205,9 @@ public class Agente implements Ciclico {
 		// Gi,j && At-1 = OESTE => Mi-1,0 && Mi-1,1 … Mi-1,m
 		if (G && accionp == Acciones.DESPLAZARSE_OESTE) {
 			for (int j = 0; j < alto; j++) {
+				if (get(X - 1, j, Estado.SIN_CONSUMIR)) {
+					sinConsumir--;
+				}
 				set(X - 1, j, Estado.MURO);
 			}
 		}
@@ -279,6 +298,16 @@ public class Agente implements Ciclico {
 			}
 		}
 
+		// ¬V* => sinConsumir++
+		for (int i = 0; i < 4; i++) {
+			int XX = X + X_OFFSET[i];
+			int YY = Y + Y_OFFSET[i];
+			if (get(XX, YY, Estado.OK) && !get(XX, YY, Estado.VISITADA) && !get(XX, YY, Estado.SIN_CONSUMIR)) {
+				sinConsumir++;
+				set(XX, YY, Estado.SIN_CONSUMIR);
+			}
+		}
+
 		// ************** //
 		// PARTE REACTIVA //
 		// ************** //
@@ -303,6 +332,7 @@ public class Agente implements Ciclico {
 
 				if (get(XX, YY, Estado.MONSTRUO) && num_proyectiles > 0) {
 					accion = 4 + i;
+					num_proyectiles--;
 					set(XX, YY, Estado.DISPARADO_NORTE + i);
 					break;
 				}
@@ -313,14 +343,18 @@ public class Agente implements Ciclico {
 				int XX = X + X_OFFSET[i];
 				int YY = Y + Y_OFFSET[i];
 				if (get(XX, YY, Estado.POSIBLE_MONSTRUO) && num_proyectiles > 0) {
-					accion = 4 + i;
-					set(X, Y, Estado.DISPARADO_NORTE + i);
-					break;
+					if (sinConsumir == 0) {
+						accion = 4 + i;
+						num_proyectiles--;
+						set(X, Y, Estado.DISPARADO_NORTE + i);
+						System.out.println("PEW " + num_proyectiles + "=========================================================================================");
+						break;
+					}
 				}
 			}
 
-
 			if (accion == Acciones.NINGUNA) {
+				System.err.println("******************************************************************************************************");
 				// **** !!!!!!! APAÑO !!!!!!!!!!!!! //
 				if (!pilaAcciones.empty()) {
 					accion = pilaAcciones.pop();
@@ -329,6 +363,7 @@ public class Agente implements Ciclico {
 		}
 
 		accionp = accion;
+		System.err.println("sinConsumir: " + sinConsumir);
 	}
 
 	@Override
@@ -416,7 +451,7 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 

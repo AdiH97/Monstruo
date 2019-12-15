@@ -133,6 +133,7 @@ public class Entorno extends JPanel implements Ciclico {
 				int accionp = a.getAccionp();
 				
 				Percepciones p = a.getPercepciones();
+				p.set(Percepciones.GEMIDO, false);
 
 				if (accionp == Acciones.RECOGER_TESORO) {
 					set(x, y, NADA);
