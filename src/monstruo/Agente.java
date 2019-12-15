@@ -97,7 +97,7 @@ public class Agente implements Ciclico {
 	}
 
 	public void calcularAccion() {
-		
+
 		final int[] X_OFFSET = {0, 1, 0, -1};
 		final int[] Y_OFFSET = {-1, 0, 1, 0};
 		X = getX();
@@ -315,18 +315,9 @@ public class Agente implements Ciclico {
 		if (get(X, Y, Estado.TESORO)) {
 			accion = Acciones.RECOGER_TESORO;
 		} else {
-			for (int i = 0; i < 4; i++) {
-				int XX = X + X_OFFSET[i];
-				int YY = Y + Y_OFFSET[i];
-				if (!get(XX, YY, Estado.MURO) && !get(XX, YY, Estado.VISITADA) && get(XX, YY, Estado.OK)) {
-					accion = i;
-					pilaAcciones.push((accion + 2) % 4);
-					break;
-				}
-			}
 
 			// Monstruo seguro
-			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
+			for (int i = 0; i < 4; i++) {
 				int XX = X + X_OFFSET[i];
 				int YY = Y + Y_OFFSET[i];
 
@@ -334,6 +325,16 @@ public class Agente implements Ciclico {
 					accion = 4 + i;
 					num_proyectiles--;
 					set(XX, YY, Estado.DISPARADO_NORTE + i);
+					break;
+				}
+			}
+
+			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+				if (!get(XX, YY, Estado.MURO) && !get(XX, YY, Estado.VISITADA) && get(XX, YY, Estado.OK)) {
+					accion = i;
+					pilaAcciones.push((accion + 2) % 4);
 					break;
 				}
 			}
@@ -347,14 +348,13 @@ public class Agente implements Ciclico {
 						accion = 4 + i;
 						num_proyectiles--;
 						set(X, Y, Estado.DISPARADO_NORTE + i);
-						System.out.println("PEW " + num_proyectiles + "=========================================================================================");
+						// System.out.println("PEW " + num_proyectiles + "==============================================");
 						break;
 					}
 				}
 			}
 
 			if (accion == Acciones.NINGUNA) {
-				System.err.println("******************************************************************************************************");
 				// **** !!!!!!! APAÑO !!!!!!!!!!!!! //
 				if (!pilaAcciones.empty()) {
 					accion = pilaAcciones.pop();
@@ -363,7 +363,7 @@ public class Agente implements Ciclico {
 		}
 
 		accionp = accion;
-		System.err.println("sinConsumir: " + sinConsumir);
+		// System.err.println("sinConsumir: " + sinConsumir);
 	}
 
 	@Override
@@ -451,7 +451,7 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 

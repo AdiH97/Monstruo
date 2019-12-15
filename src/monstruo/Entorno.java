@@ -49,8 +49,8 @@ public class Entorno extends JPanel implements Ciclico {
 		final int muroSur = alto - 1;
 		final int muroOeste = 0;
 		final int muroEste = ancho - 1;
-		int[] baseX = {muroOeste + 1, muroEste - 1, muroEste - 1, muroOeste + 1};
-		int[] baseY = {muroNorte + 1, muroNorte + 1, muroSur - 1, muroSur - 1};
+		int[] baseX = {muroOeste + 4, muroEste - 1, muroEste - 1, muroOeste + 1};
+		int[] baseY = {muroNorte + 4, muroNorte + 1, muroSur - 1, muroSur - 1};
 
 		for (int i = 0; i < ancho; i++) {
 			mapa[i][muroNorte] = mapa[i][muroSur] = MURO;
