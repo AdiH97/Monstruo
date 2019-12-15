@@ -49,8 +49,8 @@ public class Entorno extends JPanel implements Ciclico {
 		final int muroSur = alto - 1;
 		final int muroOeste = 0;
 		final int muroEste = ancho - 1;
-		int[] baseX = {muroOeste + 4, muroEste - 1, muroEste - 1, muroOeste + 1};
-		int[] baseY = {muroNorte + 4, muroNorte + 1, muroSur - 1, muroSur - 1};
+		int[] baseX = {muroOeste + 1, muroEste - 1, muroEste - 1, muroOeste + 1};
+		int[] baseY = {muroNorte + 1, muroNorte + 1, muroSur - 1, muroSur - 1};
 
 		for (int i = 0; i < ancho; i++) {
 			mapa[i][muroNorte] = mapa[i][muroSur] = MURO;
@@ -72,7 +72,7 @@ public class Entorno extends JPanel implements Ciclico {
 			agentes[i] = new Agente(gAtlas, G_INDICES_AGENTES[i], ancho, alto, baseX[i], baseY[i]);
 		}
 
-		numAgentes = 1;
+		numAgentes = 4;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -96,25 +96,25 @@ public class Entorno extends JPanel implements Ciclico {
 	private int getColindante(int x, int y, int accion) {
 		return mapa[x + X_OFFSET[accion]][y + Y_OFFSET[accion]];
 	}
-	
-	private void ganador () {
+
+	private void ganador() {
 		boolean todos_base = true;
-		for(Agente a : agentes) {
-			if(!(a.getX() == a.getStartX() && a.getY() == a.getStartY())) {
+		for (Agente a : agentes) {
+			if (!(a.getX() == a.getStartX() && a.getY() == a.getStartY())) {
 				todos_base = false;
 			}
 		}
-		
-		if(todos_base) {
+
+		if (todos_base) {
 			int agente = 0;
 			int num_tesoros = 0;
-			for(int i = 0; i < agentes.length; i++) {
-				if(agentes[i].getNumTesorosEncontrados() > num_tesoros) {
+			for (int i = 0; i < agentes.length; i++) {
+				if (agentes[i].getNumTesorosEncontrados() > num_tesoros) {
 					agente = i;
 					num_tesoros = agentes[i].getNumTesorosEncontrados();
 				}
 			}
-			
+
 			System.out.println("Ganador " + agente + ", con " + num_tesoros + " encontrados");
 		}
 	}
@@ -131,7 +131,7 @@ public class Entorno extends JPanel implements Ciclico {
 
 				// posición del agente y última acción del agente //
 				int accionp = a.getAccionp();
-				
+
 				Percepciones p = a.getPercepciones();
 				p.set(Percepciones.GEMIDO, false);
 
@@ -142,7 +142,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-							&& mapa[balaX][balaY] != MONSTRUO) {
+						   && mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
@@ -164,12 +164,48 @@ public class Entorno extends JPanel implements Ciclico {
 				p.set(Percepciones.GOLPE, g);
 
 				a.calcularAccion();
-				
+
 				ganador();
 			}
 			// CÓDIGO ENTORNO (FIN) //
 
 			a.ciclo();
+
+			/*System.err.println(x + "(" + a.gX + ")" + ", " + y + "(" + a.gY + ") " + a.getAccion());
+			int _x = x * gAtlas.getSubancho() < a.gX ? x + 1: x; // 
+			int _y = y * gAtlas.getSubalto() < a.gY ? y + 1 : y; // Y=1 : _y = 32, gY = 63
+			if (getColindante(_x, _y, a.getAccion()) != MURO) {
+				switch (a.getAccion()) {
+					case Acciones.DESPLAZARSE_NORTE:
+						a.gY -= 1;
+						break;
+					case Acciones.DESPLAZARSE_ESTE:
+						a.gX += 1;
+						break;
+					case Acciones.DESPLAZARSE_SUR:
+						a.gY += 1;
+						break;
+					case Acciones.DESPLAZARSE_OESTE:
+						a.gX -= 1;
+						break;
+				}
+			}*/
+			if (getColindante(x, y, a.getAccion()) != MURO) {
+				switch (a.getAccion()) {
+					case Acciones.DESPLAZARSE_NORTE:
+						a.gY -= 1;
+						break;
+					case Acciones.DESPLAZARSE_ESTE:
+						a.gX += 1;
+						break;
+					case Acciones.DESPLAZARSE_SUR:
+						a.gY += 1;
+						break;
+					case Acciones.DESPLAZARSE_OESTE:
+						a.gX -= 1;
+						break;
+				}
+			}
 		}
 		ciclos++;
 	}

@@ -31,7 +31,7 @@ public class Agente implements Ciclico {
 	// gráficos //
 	private final Atlas gAtlas;
 	private final int gIndiceTextura;
-	private int gX, gY;
+	protected int gX, gY;
 	private int gDireccion;
 	private boolean gPaso, gAlternaPaso;
 
@@ -73,7 +73,8 @@ public class Agente implements Ciclico {
 				mapa[i][j] = new Estado();
 			}
 		}
-		accion = accionp = Acciones.DESPLAZARSE_NORTE;
+		accionp = Acciones.NINGUNA;
+		accion = Acciones.DESPLAZARSE_NORTE;
 		pilaAcciones = new Stack<>();
 		num_proyectiles = 0;
 		num_tesoros_encontrados = 0;
@@ -397,24 +398,6 @@ public class Agente implements Ciclico {
 				gPaso = !gPaso;
 				break;
 		}
-		// esto se hace siempre
-		// animación
-		//if (!getPercepciones().get(Percepciones.GOLPE)) {
-		switch (accion) {
-			case Acciones.DESPLAZARSE_NORTE:
-				gY -= 1;
-				break;
-			case Acciones.DESPLAZARSE_ESTE:
-				gX += 1;
-				break;
-			case Acciones.DESPLAZARSE_SUR:
-				gY += 1;
-				break;
-			case Acciones.DESPLAZARSE_OESTE:
-				gX -= 1;
-				break;
-		}
-		//}
 		ciclos++;
 	}
 
@@ -451,16 +434,38 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 
 	public int getX() {
-		return (gX + (accion == Acciones.DESPLAZARSE_OESTE ? 31 : 0)) / gAtlas.getSubancho();
+		switch (accion) {
+			case Acciones.DESPLAZARSE_NORTE:
+				return gX / gAtlas.getSubancho();
+			case Acciones.DESPLAZARSE_ESTE:
+				return (gX - 0) / gAtlas.getSubancho();
+			case Acciones.DESPLAZARSE_SUR:
+				return gX / gAtlas.getSubancho();
+			case Acciones.DESPLAZARSE_OESTE:
+				return (gX + 31) / gAtlas.getSubancho();
+			default:
+				return gX / gAtlas.getSubancho();
+		}
 	}
 
 	public int getY() {
-		return (gY + (accion == Acciones.DESPLAZARSE_SUR ? 31 : 0)) / gAtlas.getSubalto();
+		switch (accion) {
+			case Acciones.DESPLAZARSE_NORTE:
+				return (gY + 31) / gAtlas.getSubalto();
+			case Acciones.DESPLAZARSE_ESTE:
+				return gY / gAtlas.getSubalto();
+			case Acciones.DESPLAZARSE_SUR:
+				return (gY - 0) / gAtlas.getSubalto();
+			case Acciones.DESPLAZARSE_OESTE:
+				return gY / gAtlas.getSubalto();
+			default:
+				return gY / gAtlas.getSubalto();
+		}
 	}
 
 	public int getAccion() {
