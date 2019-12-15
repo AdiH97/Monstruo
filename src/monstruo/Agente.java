@@ -103,6 +103,7 @@ public class Agente implements Ciclico {
 		boolean B = p.get(Percepciones.BRISA);
 		boolean R = p.get(Percepciones.RESPLANDOR);
 		boolean G = p.get(Percepciones.GOLPE);
+		boolean S = p.get(Percepciones.GEMIDO);
 
 		set(X, Y, Estado.VISITADA);
 		accion = Acciones.NINGUNA;
@@ -110,6 +111,88 @@ public class Agente implements Ciclico {
 		// *************** //
 		// PARTE DEDUCTIVA //
 		// *************** //
+		// 
+		// Si se ha oído un grito en la dirección en que se ha disparado, podemos asegurar que el monstruo en la
+		// casilla adyacente no hay monstruo
+		if (S) {
+			switch (accionp) {
+				case Acciones.DISPARAR_NORTE:
+					set(X, Y - 1, Estado.OK_MONSTRUO);
+					break;
+				case Acciones.DISPARAR_ESTE:
+					set(X + 1, Y, Estado.OK_MONSTRUO);
+					break;
+				case Acciones.DISPARAR_SUR:
+					set(X, Y + 1, Estado.OK_MONSTRUO);
+					break;
+				case Acciones.DISPARAR_OESTE:
+					set(X - 1, Y, Estado.OK_MONSTRUO);
+					break;
+			}
+		} else {
+			// Si se ha disparado un bala y no se ha oido un grito, en toda la fila/columna no hay monstruo
+			switch (accionp) {
+				case Acciones.DISPARAR_NORTE:
+					for (int i = 0; i < ancho; i++) {
+						set(i, Y - 1, Estado.OK_MONSTRUO);
+					}
+					break;
+				case Acciones.DISPARAR_ESTE:
+					for (int i = 0; i < alto; i++) {
+						set(i + 1, Y, Estado.OK_MONSTRUO);
+					}
+					break;
+				case Acciones.DISPARAR_SUR:
+					for (int i = 0; i < ancho; i++) {
+						set(i, Y + 1, Estado.OK_MONSTRUO);
+					}
+					break;
+				case Acciones.DISPARAR_OESTE:
+					for (int i = 0; i < alto; i++) {
+						set(i - 1, Y, Estado.OK_MONSTRUO);
+					}
+					break;
+			}
+		}
+
+		// Ri,j => Ti,j
+		if (R) {
+			set(X, Y, Estado.TESORO);
+		}
+
+		// ¬Ri,j => ¬Ti,j
+		if (!R) {
+			clear(X, Y, Estado.TESORO);
+		}
+
+		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
+		if (G && accionp == Acciones.DESPLAZARSE_NORTE) {
+			for (int j = 0; j < ancho; j++) {
+				set(j, Y - 1, Estado.MURO);
+			}
+		}
+
+		// Gi,j && At-1 = ESTE => Mi+1,0 && Mi+1,1 … Mi+1,m
+		if (G && accionp == Acciones.DESPLAZARSE_ESTE) {
+			for (int j = 0; j < alto; j++) {
+				set(X + 1, j, Estado.MURO);
+			}
+		}
+
+		// Gi,j && At-1 = SUR => M0,j+1 && M1,j+1 … Mn,j+1
+		if (G && accionp == Acciones.DESPLAZARSE_SUR) {
+			for (int j = 0; j < ancho; j++) {
+				set(j, Y + 1, Estado.MURO);
+			}
+		}
+
+		// Gi,j && At-1 = OESTE => Mi-1,0 && Mi-1,1 … Mi-1,m
+		if (G && accionp == Acciones.DESPLAZARSE_OESTE) {
+			for (int j = 0; j < alto; j++) {
+				set(X - 1, j, Estado.MURO);
+			}
+		}
+
 		// H => Hi,j
 		if (H) {
 			set(X, Y, Estado.HEDOR);
@@ -196,44 +279,6 @@ public class Agente implements Ciclico {
 			}
 		}
 
-		// Ri,j => Ti,j
-		if (R) {
-			set(X, Y, Estado.TESORO);
-		}
-
-		// ¬Ri,j => ¬Ti,j
-		if (!R) {
-			clear(X, Y, Estado.TESORO);
-		}
-
-		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
-		if (G && accionp == Acciones.DESPLAZARSE_NORTE) {
-			for (int j = 0; j < ancho; j++) {
-				set(j, Y - 1, Estado.MURO);
-			}
-		}
-
-		// Gi,j && At-1 = ESTE => Mi+1,0 && Mi+1,1 … Mi+1,m
-		if (G && accionp == Acciones.DESPLAZARSE_ESTE) {
-			for (int j = 0; j < alto; j++) {
-				set(X + 1, j, Estado.MURO);
-			}
-		}
-
-		// Gi,j && At-1 = SUR => M0,j+1 && M1,j+1 … Mn,j+1
-		if (G && accionp == Acciones.DESPLAZARSE_SUR) {
-			for (int j = 0; j < ancho; j++) {
-				set(j, Y + 1, Estado.MURO);
-			}
-		}
-
-		// Gi,j && At-1 = OESTE => Mi-1,0 && Mi-1,1 … Mi-1,m
-		if (G && accionp == Acciones.DESPLAZARSE_OESTE) {
-			for (int j = 0; j < alto; j++) {
-				set(X - 1, j, Estado.MURO);
-			}
-		}
-
 		// ************** //
 		// PARTE REACTIVA //
 		// ************** //
@@ -250,6 +295,30 @@ public class Agente implements Ciclico {
 					break;
 				}
 			}
+
+			// Monstruo seguro
+			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+
+				if (get(XX, YY, Estado.MONSTRUO) && num_proyectiles > 0) {
+					accion = 4 + i;
+					set(XX, YY, Estado.DISPARADO_NORTE + i);
+					break;
+				}
+			}
+
+			// Posible monstruos y no hay salida
+			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
+				int XX = X + X_OFFSET[i];
+				int YY = Y + Y_OFFSET[i];
+				if (get(XX, YY, Estado.POSIBLE_MONSTRUO) && num_proyectiles > 0) {
+					accion = 4 + i;
+					set(X, Y, Estado.DISPARADO_NORTE + i);
+					break;
+				}
+			}
+
 
 			if (accion == Acciones.NINGUNA) {
 				// **** !!!!!!! APAÑO !!!!!!!!!!!!! //
@@ -296,20 +365,20 @@ public class Agente implements Ciclico {
 		// esto se hace siempre
 		// animación
 		//if (!getPercepciones().get(Percepciones.GOLPE)) {
-			switch (accion) {
-				case Acciones.DESPLAZARSE_NORTE:
-					gY -= 1;
-					break;
-				case Acciones.DESPLAZARSE_ESTE:
-					gX += 1;
-					break;
-				case Acciones.DESPLAZARSE_SUR:
-					gY += 1;
-					break;
-				case Acciones.DESPLAZARSE_OESTE:
-					gX -= 1;
-					break;
-			}
+		switch (accion) {
+			case Acciones.DESPLAZARSE_NORTE:
+				gY -= 1;
+				break;
+			case Acciones.DESPLAZARSE_ESTE:
+				gX += 1;
+				break;
+			case Acciones.DESPLAZARSE_SUR:
+				gY += 1;
+				break;
+			case Acciones.DESPLAZARSE_OESTE:
+				gX -= 1;
+				break;
+		}
 		//}
 		ciclos++;
 	}
@@ -347,7 +416,7 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-									   getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
 		}
 	}
 
