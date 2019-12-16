@@ -26,6 +26,10 @@ public class Entorno extends JPanel implements Ciclico {
 	public static final int TESORO = 2;
 	public static final int MURO = 3;
 	public static final int HEDOR_FALSO = 4;
+	public static final int BASE_AMARILLO = 8;
+	public static final int BASE_ROJO = 9;
+	public static final int BASE_VERDE = 10;
+	public static final int BASE_AZUL = 11;
 	private final int ancho;
 	private final int alto;
 	private final int[][] mapa;
@@ -73,11 +77,12 @@ public class Entorno extends JPanel implements Ciclico {
 
 		for (int i = 0; i < agentes.length; i++) {
 			agentes[i] = new Agente(gAtlas, G_INDICES_AGENTES[i], ancho, alto, baseX[i], baseY[i]);
+			mapa[baseX[i]][baseY[i]] = BASE_AMARILLO + i;
 		}
 
 		bombas = new ArrayList<>();
 
-		numAgentes = 4;
+		numAgentes = 1;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -210,6 +215,10 @@ public class Entorno extends JPanel implements Ciclico {
 						break;
 				}
 			}
+
+			if (a.getAccionp() <= 4 && a.getAccionp() < 8) {
+
+			}
 		}
 		ciclos++;
 	}
@@ -248,6 +257,22 @@ public class Entorno extends JPanel implements Ciclico {
 						break;
 					case HEDOR_FALSO:
 						indice = 0;
+						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
+						break;
+					case BASE_AMARILLO:
+						indice = 16 + 19 * 0;
+						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
+						break;
+					case BASE_ROJO:
+						indice = 16 + 19 * 1;
+						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
+						break;
+					case BASE_VERDE:
+						indice = 16 + 19 * 2;
+						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
+						break;
+					case BASE_AZUL:
+						indice = 16 + 19 * 3;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 				}
