@@ -1,6 +1,5 @@
 package monstruo;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -11,7 +10,7 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int[] G_INDICES_AGENTES = {4, 7, 10, 13};
 	private static final int[] X_OFFSET = {0, 1, 0, -1};
 	private static final int[] Y_OFFSET = {-1, 0, 1, 0};
-	
+
 	private static final int DURACION_BOMBAS = 69; // 9 ciclos (-1 del agente)
 	private ArrayList<int[]> bombas;
 	private int ciclos;
@@ -75,7 +74,7 @@ public class Entorno extends JPanel implements Ciclico {
 		for (int i = 0; i < agentes.length; i++) {
 			agentes[i] = new Agente(gAtlas, G_INDICES_AGENTES[i], ancho, alto, baseX[i], baseY[i]);
 		}
-		
+
 		bombas = new ArrayList<>();
 
 		numAgentes = 4;
@@ -133,11 +132,11 @@ public class Entorno extends JPanel implements Ciclico {
 
 			// CÓDIGO ENTORNO //
 			if (ciclos % 32 == 0) {
-				
-				for(int j = 0; j < bombas.size(); j++) {
+
+				for (int j = 0; j < bombas.size(); j++) {
 					bombas.get(j)[2]--;
-					
-					if(bombas.get(j)[2] == 0) {
+
+					if (bombas.get(j)[2] == 0) {
 						int bx = bombas.get(j)[0];
 						int by = bombas.get(j)[1];
 						mapa[bx][by] = NADA;
@@ -158,7 +157,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-							&& mapa[balaX][balaY] != MONSTRUO) {
+						   && mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
@@ -178,14 +177,14 @@ public class Entorno extends JPanel implements Ciclico {
 				p.set(Percepciones.RESPLANDOR, r);
 
 				a.calcularAccion();
-				
+
 				int accion = a.getAccion();
-				
+
 				g = accion >= 0 && accion < 4 && (getColindante(x, y, accion) == MURO);
 				p.set(Percepciones.GOLPE, g);
-				
-				if(accion == Acciones.PRODUCIR_HEDOR) {
-					bombas.add(new int[]{x, y, DURACION_BOMBAS});
+
+				if (accion == Acciones.PRODUCIR_HEDOR) {
+					bombas.add(new int[]{x, y, DURACION_BOMBAS, i});
 					set(x, y, HEDOR_FALSO);
 				}
 
@@ -228,17 +227,19 @@ public class Entorno extends JPanel implements Ciclico {
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case MONSTRUO:
-						indice = 17;
+						indice = 19;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
-						indice = 34;
+						indice = 38;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case PRECIPICIO:
-						indice = 18;
+						indice = 20;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case TESORO:
-						indice = 51;
+						indice = 0;
+						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
+						indice = 57;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case MURO:
@@ -246,15 +247,105 @@ public class Entorno extends JPanel implements Ciclico {
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case HEDOR_FALSO:
-						g.setColor(new Color(255, 255, 0, 200));
-						g.fillRect(i * gAtlas.getSubancho() * gFactorEscalado, j * gAtlas.getSubalto() * gFactorEscalado, gAtlas.getSubancho() * gFactorEscalado, gAtlas.getSubalto() * gFactorEscalado);
+						indice = 0;
+						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
+						break;
 				}
 			}
+
 		}
 
 		for (int i = 0; i < numAgentes; i++) {
 			agentes[i].pintar(g, gFactorEscalado);
 		}
+
+		for (int i = 0; i < ancho; i++) {
+			for (int j = 0; j < alto; j++) {
+				int x = i * gAtlas.getSubancho();
+				int y = j * gAtlas.getSubalto();
+				int indice;
+				switch (mapa[i][j]) {
+					case MONSTRUO:
+						for (int k = 0; k < 4; k++) {
+							int XX = i + X_OFFSET[k];
+							int YY = j + Y_OFFSET[k];
+							int xx = XX * gAtlas.getSubancho();
+							int yy = YY * gAtlas.getSubalto();
+							if (get(XX, YY) != MURO && get(XX, YY) != PRECIPICIO && get(XX, YY) != MONSTRUO) {
+								int cc = ciclos % 32;
+								if ((cc >= 0 && cc < 16)) {
+									indice = 41;
+								} else {
+									indice = 60;
+								}
+								gAtlas.pintarTexturaEscala(g, xx, yy, indice, gFactorEscalado); // 37, 54
+							}
+						}
+						break;
+					case PRECIPICIO:
+						for (int k = 0; k < 4; k++) {
+							int XX = i + X_OFFSET[k];
+							int YY = j + Y_OFFSET[k];
+							int xx = XX * gAtlas.getSubancho();
+							int yy = YY * gAtlas.getSubalto();
+							if (get(XX, YY) != MURO && get(XX, YY) != PRECIPICIO && get(XX, YY) != MONSTRUO) {
+								int cc = ciclos % 32;
+								if ((cc >= 0 && cc < 16)) {
+									indice = 3;
+								} else {
+									indice = 22;
+								}
+								gAtlas.pintarTexturaEscala(g, xx, yy, indice, gFactorEscalado); // 3, 20
+							}
+						}
+						break;
+					case HEDOR_FALSO:
+						ArrayList<Integer> hedoresFalsos = new ArrayList<>();
+						for (int[] foo : bombas) {
+							if (foo[0] == i && foo[1] == j) {
+								hedoresFalsos.add(foo[3]);
+							}
+						}
+						for (int a : hedoresFalsos) {
+							int cc = ciclos % 32;
+							indice = 0;
+							if ((cc >= 0 && cc < 16)) {
+								switch (a) {
+									case 0:
+										indice = 17;
+										break;
+									case 1:
+										indice = 18;
+										break;
+									case 2:
+										indice = 55;
+										break;
+									case 3:
+										indice = 56;
+										break;
+								}
+							} else {
+								switch (a) {
+									case 0:
+										indice = 17 + 19;
+										break;
+									case 1:
+										indice = 18 + 19;
+										break;
+									case 2:
+										indice = 55 + 19;
+										break;
+									case 3:
+										indice = 56 + 19;
+										break;
+								}
+							}
+							gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado); // 3, 20
+						}
+				}
+			}
+		}
+
 	}
 
 	@Override

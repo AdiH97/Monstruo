@@ -91,7 +91,7 @@ public class Agente implements Ciclico {
 		STARTY = y;
 		X = x;
 		Y = y;
-		sinConsumir = 1;
+		sinConsumir = 0;
 		bombas_restantes = MAX_BOMBAS;
 		r = new Random();
 		ciclos_restantes = r.nextInt(MAX_CICLOS) + MIN_CICLOS;
@@ -335,7 +335,6 @@ public class Agente implements Ciclico {
 		} else if (ciclos_restantes == 0 && bombas_restantes > 0) {
 			bombas_restantes--;
 			accion = Acciones.PRODUCIR_HEDOR;
-			System.out.println("Tirar bombar!!");
 		} else {
 			// Monstruo seguro
 			for (int i = 0; i < 4; i++) {
@@ -385,6 +384,7 @@ public class Agente implements Ciclico {
 
 		tirarBomba();
 		accionp = accion;
+		System.out.println("sinConsumir = " + sinConsumir);
 	}
 
 	private void tirarBomba() {
@@ -405,19 +405,19 @@ public class Agente implements Ciclico {
 				switch (accion) {
 					case Acciones.DESPLAZARSE_NORTE:
 					case Acciones.DISPARAR_NORTE:
-						gDireccion = 1 * 544 / gAtlas.getSubancho();
+						gDireccion = 1 * 608 / gAtlas.getSubancho();
 						break;
 					case Acciones.DESPLAZARSE_ESTE:
 					case Acciones.DISPARAR_ESTE:
-						gDireccion = 2 * 544 / gAtlas.getSubancho();
+						gDireccion = 2 * 608 / gAtlas.getSubancho();
 						break;
 					case Acciones.DESPLAZARSE_SUR:
 					case Acciones.DISPARAR_SUR:
-						gDireccion = 0 * 544 / gAtlas.getSubancho();
+						gDireccion = 0 * 608 / gAtlas.getSubancho();
 						break;
 					case Acciones.DESPLAZARSE_OESTE:
 					case Acciones.DISPARAR_OESTE:
-						gDireccion = 3 * 544 / gAtlas.getSubancho();
+						gDireccion = 3 * 608 / gAtlas.getSubancho();
 						break;
 				}
 				gAlternaPaso = !gAlternaPaso;
