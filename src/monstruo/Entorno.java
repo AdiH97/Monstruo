@@ -206,7 +206,7 @@ public class Entorno extends JPanel implements Ciclico {
 				g = accion >= 0 && accion < 4 && (getColindante(x, y, accion) == MURO);
 				p.set(Percepciones.GOLPE, g);
 
-				if (accion == Acciones.PRODUCIR_HEDOR) {
+				if (accion == Acciones.PRODUCIR_HEDOR && get(x, y) < BASE_AMARILLO) {
 					bombas.add(new int[]{x, y, DURACION_BOMBAS, i});
 					set(x, y, HEDOR_FALSO);
 				}
