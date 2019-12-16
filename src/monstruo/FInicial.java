@@ -5,14 +5,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 public class FInicial {
@@ -21,8 +18,8 @@ public class FInicial {
 
 		JLabel txt_tam = new JLabel("Número de casillas :"),
 				txt_num_agentes = new JLabel("Número de agentes: ");
-		JTextField field_tam = new JTextField(10),
-				field_num_agentes = new JTextField(10);
+		JTextField field_tam = new JTextField("10", 10),
+				field_num_agentes = new JTextField("4", 10);
 		JButton btn_inicia = new JButton("Iniciar");
 		GridBagConstraints gbc = new GridBagConstraints();
 		JFrame inicial = new JFrame("Monstruo");
@@ -58,18 +55,19 @@ public class FInicial {
 
 					if (agentes > 4 || agentes < 1) {
 						JOptionPane.showConfirmDialog(null, "Número de agentes inválido!", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+					} else {
+						inicial.dispose();
+
+						Thread hilo = new Thread(new Runnable() {
+
+							@Override
+							public void run() {
+								Monstruo monstruo = new Monstruo(tam, agentes);
+
+							}
+						});
+						hilo.start();
 					}
-					inicial.dispose();
-
-					Thread hilo = new Thread(new Runnable() {
-
-						@Override
-						public void run() {
-							Monstruo monstruo = new Monstruo(tam, agentes);
-
-						}
-					});
-					hilo.start();
 				} catch (NumberFormatException ex) {
 					JOptionPane.showConfirmDialog(null, "Número de casillas/agentes inválido!", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
 				}

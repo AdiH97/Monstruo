@@ -2,7 +2,10 @@ package monstruo;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -84,7 +87,7 @@ public class Entorno extends JPanel implements Ciclico {
 
 		bombas = new ArrayList<>();
 
-		numAgentes = 1;
+		numAgentes = 4;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -110,35 +113,43 @@ public class Entorno extends JPanel implements Ciclico {
 	}
 
 	private void ganador() {
+		// Si se han añadido tesoros en el entorno
 		if (numTesoros != 0) {
-			boolean todos_base = true;
+			// Lista de agentes
+			int[] tesoros_agentes = new int[4];
+			
+			// Comprobar que todos estan en base y han terminado de explorar el mapa
 			boolean todos_terminado = true;
 			for (int i = 0; i < numAgentes; i++) {
 				Agente a = agentes[i];
-				if (!(a.getX() == a.getStartX() && a.getY() == a.getStartY())) {
-					todos_base = false;
-				}
-				if (a.getSinConsumir() != 0) {
+				int x = a.getX();
+				int y = a.getY();
+				int sx = a.getStartX();
+				int sy = a.getStartY();
+				int sc = a.getSinConsumir();
+				if (!(x == sx && y == sy && sc == 0)){
 					todos_terminado = false;
+				} else {
+					tesoros_agentes[i] = a.getNumTesorosEncontrados();
 				}
 			}
 
-			if (todos_base && todos_terminado) {
-				int agente = 0;
-				int num_tesoros = 0;
-				for (int i = 0; i < numAgentes; i++) {
-					Agente a = agentes[i];
-					if (a.getNumTesorosEncontrados() > num_tesoros) {
-						agente = i;
-						num_tesoros = a.getNumTesorosEncontrados();
+			if (todos_terminado) {
+				int max_num_tesoros = Arrays.stream(tesoros_agentes).max().getAsInt();
+
+				// Si alguien ha encontrado uno o más tesoros
+				if (max_num_tesoros > 0) {
+					// Mostrar todos los agentes que tengan el máximo número de tesoros encontrados
+					for (int i = 0; i < numAgentes; i++) {
+						if (tesoros_agentes[i] == max_num_tesoros) {
+							JOptionPane.showMessageDialog(null,
+									"Número de tesoros recogidos: " + max_num_tesoros,
+									"Ganador",
+									JOptionPane.DEFAULT_OPTION,
+									new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[i]).getScaledInstance(64, 64, Image.SCALE_FAST)));
+						}
 					}
-				}
-				if (num_tesoros > 0) {
-					JOptionPane.showMessageDialog(null,
-												  "Número de tesoros recogidos: " + num_tesoros,
-												  "Ganador",
-												  JOptionPane.DEFAULT_OPTION,
-												  new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[agente])));
+					// Fin del programa
 					System.exit(0);
 				}
 			}
@@ -179,7 +190,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-						   && mapa[balaX][balaY] != MONSTRUO) {
+							&& mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
@@ -209,8 +220,6 @@ public class Entorno extends JPanel implements Ciclico {
 					bombas.add(new int[]{x, y, DURACION_BOMBAS, i});
 					set(x, y, HEDOR_FALSO);
 				}
-
-				ganador();
 			}
 			// CÓDIGO ENTORNO (FIN) //
 
@@ -232,6 +241,10 @@ public class Entorno extends JPanel implements Ciclico {
 						break;
 				}
 			}
+		}
+		
+		if (ciclos % 32 == 0) {
+			ganador();
 		}
 		ciclos++;
 	}
@@ -422,7 +435,7 @@ public class Entorno extends JPanel implements Ciclico {
 	public int getNumAgentes() {
 		return numAgentes;
 	}
-	
+
 	public void setNumAgentes(int numAgentes) {
 		this.numAgentes = numAgentes;
 	}
@@ -470,11 +483,11 @@ public class Entorno extends JPanel implements Ciclico {
 	public int getCiclos() {
 		return ciclos;
 	}
-	
-	public void reset () {
+
+	public void reset() {
 		ciclos = 0;
 		gFactorEscalado = 1;
-		
+
 		mapa = new int[ancho][alto];
 
 		final int muroNorte = 0;
@@ -507,7 +520,6 @@ public class Entorno extends JPanel implements Ciclico {
 
 		bombas = new ArrayList<>();
 
-		numAgentes = 1;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}

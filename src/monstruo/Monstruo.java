@@ -132,7 +132,7 @@ public class Monstruo {
 			 */
 			atlas = new Atlas("./res/atlas.png", 32, 32);
 			jpEntorno = new Entorno(atlas, tam, tam);
-			jpEntorno.setNumAgentes(1);
+			jpEntorno.setNumAgentes(num_agentes);
 			pd = new PanelDebug(jpEntorno.getAgentes()[0], atlas, 0);
 
 			/**
@@ -355,6 +355,15 @@ public class Monstruo {
 			// Resetear entorno
 			jbReset.addActionListener((ActionEvent ae) -> {
 				jpEntorno.reset();
+				jpEntorno.setNumAgentes(num_agentes);
+				// Para entorno
+				jbMoving.setText(START);
+				isMoving = false;
+				// Reactivar botones de herramientas
+				for (JButton btn : botones) {
+					btnCambiarColor(null); // Desmarcar botones
+					btn.setEnabled(true);
+				}
 			});
 			
 			// Cambiar panel de debug según agente seleccionado

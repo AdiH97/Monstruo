@@ -378,7 +378,6 @@ public class Agente implements Ciclico {
 						accion = 4 + i;
 						num_proyectiles--;
 						set(X, Y, Estado.DISPARADO_NORTE + i);
-						System.out.println("Disparar hacia " + i + " (quedan " + num_proyectiles + " balas)");
 						break;
 					}
 				}
@@ -394,7 +393,6 @@ public class Agente implements Ciclico {
 
 		tirarBomba();
 		accionp = accion;
-		System.out.println("sinConsumir = " + sinConsumir);
 	}
 
 	private void tirarBomba() {
