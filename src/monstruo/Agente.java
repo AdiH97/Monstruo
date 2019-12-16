@@ -254,11 +254,11 @@ public class Agente implements Ciclico {
 						int HX2 = X + X_HOFFSET[i][j][1];
 						int HY2 = Y + Y_HOFFSET[i][j][1];
 						if (HX1 > 0 && HX1 < ancho - 1
-								&& HX2 > 0 && HX2 < ancho - 1
-								&& HY1 > 0 && HY1 < alto - 1
-								&& HY2 > 0 && HY2 < alto - 1
-								&& get(HX1, HY1, Estado.HEDOR)
-								&& get(HX2, HY2, Estado.HEDOR)) {
+							&& HX2 > 0 && HX2 < ancho - 1
+							&& HY1 > 0 && HY1 < alto - 1
+							&& HY2 > 0 && HY2 < alto - 1
+							&& get(HX1, HY1, Estado.HEDOR)
+							&& get(HX2, HY2, Estado.HEDOR)) {
 							set(XX, YY, Estado.MONSTRUO);
 						}
 					}
@@ -291,10 +291,10 @@ public class Agente implements Ciclico {
 						int BX2 = X + X_HOFFSET[i][j][1];
 						int BY2 = Y + Y_HOFFSET[i][j][1];
 						if (BX1 > 0 && BX1 < ancho - 1
-								&& BX2 > 0 && BX2 < ancho - 1
-								&& BY1 > 0 && BY1 < alto - 1
-								&& BY2 > 0 && BY2 < alto - 1
-								&& get(BX1, BY1, Estado.BRISA) && get(BX2, BY2, Estado.BRISA)) {
+							&& BX2 > 0 && BX2 < ancho - 1
+							&& BY1 > 0 && BY1 < alto - 1
+							&& BY2 > 0 && BY2 < alto - 1
+							&& get(BX1, BY1, Estado.BRISA) && get(BX2, BY2, Estado.BRISA)) {
 							set(XX, YY, Estado.PRECIPICIO);
 						}
 					}
@@ -475,7 +475,12 @@ public class Agente implements Ciclico {
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accion][0],
-					getY() * gAtlas.getSubalto() + offset[accion][1], 2, escala);
+									   getY() * gAtlas.getSubalto() + offset[accion][1], 2, escala);
+		}
+		if (accion >= 4 && accion < 7) {
+			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
+			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accion % 4][0],
+									   getY() * gAtlas.getSubalto() + offset[accion % 4][1], 2 + 19, escala);
 		}
 	}
 
