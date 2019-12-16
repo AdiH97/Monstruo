@@ -228,17 +228,17 @@ public class Entorno extends JPanel implements Ciclico {
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case MONSTRUO:
-						indice = 16;
-						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						indice = 17;
+						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
+						indice = 34;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case PRECIPICIO:
-						indice = 32;
+						indice = 18;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case TESORO:
-						indice = 48;
+						indice = 51;
 						gAtlas.pintarTexturaEscala(g, x, y, indice, gFactorEscalado);
 						break;
 					case MURO:
@@ -252,7 +252,7 @@ public class Entorno extends JPanel implements Ciclico {
 			}
 		}
 
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < numAgentes; i++) {
 			agentes[i].pintar(g, gFactorEscalado);
 		}
 	}

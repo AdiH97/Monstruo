@@ -405,19 +405,19 @@ public class Agente implements Ciclico {
 				switch (accion) {
 					case Acciones.DESPLAZARSE_NORTE:
 					case Acciones.DISPARAR_NORTE:
-						gDireccion = 1 * 512 / gAtlas.getSubancho();
+						gDireccion = 1 * 544 / gAtlas.getSubancho();
 						break;
 					case Acciones.DESPLAZARSE_ESTE:
 					case Acciones.DISPARAR_ESTE:
-						gDireccion = 2 * 512 / gAtlas.getSubancho();
+						gDireccion = 2 * 544 / gAtlas.getSubancho();
 						break;
 					case Acciones.DESPLAZARSE_SUR:
 					case Acciones.DISPARAR_SUR:
-						gDireccion = 0 * 512 / gAtlas.getSubancho();
+						gDireccion = 0 * 544 / gAtlas.getSubancho();
 						break;
 					case Acciones.DESPLAZARSE_OESTE:
 					case Acciones.DISPARAR_OESTE:
-						gDireccion = 3 * 512 / gAtlas.getSubancho();
+						gDireccion = 3 * 544 / gAtlas.getSubancho();
 						break;
 				}
 				gAlternaPaso = !gAlternaPaso;
