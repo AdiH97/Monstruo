@@ -175,7 +175,7 @@ public class Entorno extends JPanel implements Ciclico {
 				if (accionp == Acciones.RECOGER_TESORO) {
 					set(x, y, NADA);
 				} // processar disparos
-				else if (accionp >= 4) {
+				else if (accionp >= 4 && accionp < 7) {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
