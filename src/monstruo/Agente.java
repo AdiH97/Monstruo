@@ -429,6 +429,9 @@ public class Agente implements Ciclico {
 					case Acciones.DISPARAR_OESTE:
 						gDireccion = 3 * 608 / gAtlas.getSubancho();
 						break;
+					case Acciones.NINGUNA:
+						gDireccion = 0;
+						break;
 				}
 				gAlternaPaso = !gAlternaPaso;
 				break;
@@ -469,7 +472,8 @@ public class Agente implements Ciclico {
 			}
 		}
 
-		int indice = gIndiceTextura + gDireccion + (gPaso ? 1 : 0) + (gPaso && gAlternaPaso ? 1 : 0);
+		boolean quieto = (accion == Acciones.NINGUNA);
+		int indice = gIndiceTextura + gDireccion + (!quieto && gPaso ? 1 : 0) + (!quieto && gPaso && gAlternaPaso ? 1 : 0);
 		gAtlas.pintarTexturaEscala(g, gX, gY, indice, escala);
 
 		if (percepciones.get(Percepciones.GOLPE)) {
