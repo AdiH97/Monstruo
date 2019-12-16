@@ -287,7 +287,7 @@ public class Monstruo {
 			jfVentana.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			jfVentana.pack();
 			jfVentana.setLocationRelativeTo(null);
-			jfVentana.setAlwaysOnTop(true);
+			//jfVentana.setAlwaysOnTop(true);
 			jfVentana.setVisible(true);
 
 			/**

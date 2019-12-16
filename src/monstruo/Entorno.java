@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class Entorno extends JPanel implements Ciclico {
@@ -11,7 +14,7 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int[] G_INDICES_AGENTES = {4, 7, 10, 13};
 	private static final int[] X_OFFSET = {0, 1, 0, -1};
 	private static final int[] Y_OFFSET = {-1, 0, 1, 0};
-	
+
 	private static final int DURACION_BOMBAS = 69; // 9 ciclos (-1 del agente)
 	private ArrayList<int[]> bombas;
 	private int ciclos;
@@ -75,7 +78,7 @@ public class Entorno extends JPanel implements Ciclico {
 		for (int i = 0; i < agentes.length; i++) {
 			agentes[i] = new Agente(gAtlas, G_INDICES_AGENTES[i], ancho, alto, baseX[i], baseY[i]);
 		}
-		
+
 		bombas = new ArrayList<>();
 
 		numAgentes = 4;
@@ -104,23 +107,36 @@ public class Entorno extends JPanel implements Ciclico {
 	}
 
 	private void ganador() {
-		boolean todos_base = true;
-		for (Agente a : agentes) {
-			if (!(a.getX() == a.getStartX() && a.getY() == a.getStartY())) {
-				todos_base = false;
-			}
-		}
-
-		if (todos_base) {
-			int agente = 0;
-			int num_tesoros = 0;
-			for (int i = 0; i < agentes.length; i++) {
-				if (agentes[i].getNumTesorosEncontrados() > num_tesoros) {
-					agente = i;
-					num_tesoros = agentes[i].getNumTesorosEncontrados();
+		if (numTesoros != 0) {
+			boolean todos_base = true;
+			boolean todos_terminado = true;
+			for (int i = 0; i < numAgentes; i++) {
+				Agente a = agentes[i];
+				if (!(a.getX() == a.getStartX() && a.getY() == a.getStartY())) {
+					todos_base = false;
+				}
+				if (a.getSinConsumir() != 0) {
+					todos_terminado = false;
 				}
 			}
-			System.out.println("Ganador " + agente + ", con " + num_tesoros + " encontrados");
+
+			if (todos_base && todos_terminado) {
+				int agente = 0;
+				int num_tesoros = 0;
+				for (int i = 0; i < numAgentes; i++) {
+					Agente a = agentes[i];
+					if (a.getNumTesorosEncontrados() > num_tesoros) {
+						agente = i;
+						num_tesoros = a.getNumTesorosEncontrados();
+					}
+				}
+				JOptionPane.showMessageDialog(null,
+						"Número de tesoros recogidos: " + num_tesoros,
+						"Ganador",
+						JOptionPane.DEFAULT_OPTION,
+						new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[agente])));
+				System.exit(0);
+			}
 		}
 	}
 
@@ -133,11 +149,11 @@ public class Entorno extends JPanel implements Ciclico {
 
 			// CÓDIGO ENTORNO //
 			if (ciclos % 32 == 0) {
-				
-				for(int j = 0; j < bombas.size(); j++) {
+
+				for (int j = 0; j < bombas.size(); j++) {
 					bombas.get(j)[2]--;
-					
-					if(bombas.get(j)[2] == 0) {
+
+					if (bombas.get(j)[2] == 0) {
 						int bx = bombas.get(j)[0];
 						int by = bombas.get(j)[1];
 						mapa[bx][by] = NADA;
@@ -178,13 +194,13 @@ public class Entorno extends JPanel implements Ciclico {
 				p.set(Percepciones.RESPLANDOR, r);
 
 				a.calcularAccion();
-				
+
 				int accion = a.getAccion();
-				
+
 				g = accion >= 0 && accion < 4 && (getColindante(x, y, accion) == MURO);
 				p.set(Percepciones.GOLPE, g);
-				
-				if(accion == Acciones.PRODUCIR_HEDOR) {
+
+				if (accion == Acciones.PRODUCIR_HEDOR) {
 					bombas.add(new int[]{x, y, DURACION_BOMBAS});
 					set(x, y, HEDOR_FALSO);
 				}
@@ -252,7 +268,7 @@ public class Entorno extends JPanel implements Ciclico {
 			}
 		}
 
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < numAgentes; i++) {
 			agentes[i].pintar(g, gFactorEscalado);
 		}
 	}
