@@ -14,7 +14,7 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int[] Y_OFFSET = {-1, 0, 1, 0};
 
 	private static final int DURACION_BOMBAS = 69; // 9 ciclos (-1 del agente)
-	private final ArrayList<int[]> bombas;
+	private ArrayList<int[]> bombas;
 	private int ciclos;
 
 	// gráficos //
