@@ -91,7 +91,7 @@ public class Agente implements Ciclico {
 		STARTY = y;
 		X = x;
 		Y = y;
-		sinConsumir = 0;
+		sinConsumir = 1;
 		bombas_restantes = MAX_BOMBAS;
 		r = new Random();
 		ciclos_restantes = r.nextInt(MAX_CICLOS) + MIN_CICLOS;
