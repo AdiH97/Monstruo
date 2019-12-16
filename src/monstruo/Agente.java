@@ -192,7 +192,7 @@ public class Agente implements Ciclico {
 		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
 		if (G && accionp == Acciones.DESPLAZARSE_NORTE) {
 			for (int j = 0; j < ancho; j++) {
-				if (get(Y - 1, j, Estado.SIN_CONSUMIR)) {
+				if (get(j, Y-1, Estado.SIN_CONSUMIR)) {
 					sinConsumir--;
 				}
 				set(j, Y - 1, Estado.MURO);
@@ -212,7 +212,7 @@ public class Agente implements Ciclico {
 		// Gi,j && At-1 = SUR => M0,j+1 && M1,j+1 … Mn,j+1
 		if (G && accionp == Acciones.DESPLAZARSE_SUR) {
 			for (int j = 0; j < ancho; j++) {
-				if (get(Y + 1, j, Estado.SIN_CONSUMIR)) {
+				if (get(j, Y + 1, Estado.SIN_CONSUMIR)) {
 					sinConsumir--;
 				}
 				set(j, Y + 1, Estado.MURO);
@@ -253,7 +253,12 @@ public class Agente implements Ciclico {
 						int HY1 = Y + Y_HOFFSET[i][j][0];
 						int HX2 = X + X_HOFFSET[i][j][1];
 						int HY2 = Y + Y_HOFFSET[i][j][1];
-						if (get(HX1, HY1, Estado.HEDOR) && get(HX2, HY2, Estado.HEDOR)) {
+						if (HX1 > 0 && HX1 < ancho - 1
+								&& HX2 > 0 && HX2 < ancho - 1
+								&& HY1 > 0 && HY1 < alto - 1
+								&& HY2 > 0 && HY2 < alto - 1
+								&& get(HX1, HY1, Estado.HEDOR)
+								&& get(HX2, HY2, Estado.HEDOR)) {
 							set(XX, YY, Estado.MONSTRUO);
 						}
 					}
@@ -285,7 +290,11 @@ public class Agente implements Ciclico {
 						int BY1 = Y + Y_HOFFSET[i][j][0];
 						int BX2 = X + X_HOFFSET[i][j][1];
 						int BY2 = Y + Y_HOFFSET[i][j][1];
-						if (get(BX1, BY1, Estado.BRISA) && get(BX2, BY2, Estado.BRISA)) {
+						if (BX1 > 0 && BX1 < ancho - 1
+								&& BX2 > 0 && BX2 < ancho - 1
+								&& BY1 > 0 && BY1 < alto - 1
+								&& BY2 > 0 && BY2 < alto - 1
+								&& get(BX1, BY1, Estado.BRISA) && get(BX2, BY2, Estado.BRISA)) {
 							set(XX, YY, Estado.PRECIPICIO);
 						}
 					}
@@ -533,5 +542,9 @@ public class Agente implements Ciclico {
 
 	public int getNumTesorosEncontrados() {
 		return num_tesoros_encontrados;
+	}
+
+	public int getSinConsumir() {
+		return sinConsumir;
 	}
 }

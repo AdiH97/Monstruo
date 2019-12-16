@@ -3,6 +3,9 @@ package monstruo;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class Entorno extends JPanel implements Ciclico {
@@ -108,23 +111,36 @@ public class Entorno extends JPanel implements Ciclico {
 	}
 
 	private void ganador() {
-		boolean todos_base = true;
-		for (Agente a : agentes) {
-			if (!(a.getX() == a.getStartX() && a.getY() == a.getStartY())) {
-				todos_base = false;
-			}
-		}
-
-		if (todos_base) {
-			int agente = 0;
-			int num_tesoros = 0;
-			for (int i = 0; i < agentes.length; i++) {
-				if (agentes[i].getNumTesorosEncontrados() > num_tesoros) {
-					agente = i;
-					num_tesoros = agentes[i].getNumTesorosEncontrados();
+		if (numTesoros != 0) {
+			boolean todos_base = true;
+			boolean todos_terminado = true;
+			for (int i = 0; i < numAgentes; i++) {
+				Agente a = agentes[i];
+				if (!(a.getX() == a.getStartX() && a.getY() == a.getStartY())) {
+					todos_base = false;
+				}
+				if (a.getSinConsumir() != 0) {
+					todos_terminado = false;
 				}
 			}
-			System.out.println("Ganador " + agente + ", con " + num_tesoros + " encontrados");
+
+			if (todos_base && todos_terminado) {
+				int agente = 0;
+				int num_tesoros = 0;
+				for (int i = 0; i < numAgentes; i++) {
+					Agente a = agentes[i];
+					if (a.getNumTesorosEncontrados() > num_tesoros) {
+						agente = i;
+						num_tesoros = a.getNumTesorosEncontrados();
+					}
+				}
+				JOptionPane.showMessageDialog(null,
+						"Número de tesoros recogidos: " + num_tesoros,
+						"Ganador",
+						JOptionPane.DEFAULT_OPTION,
+						new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[agente])));
+				System.exit(0);
+			}
 		}
 	}
 

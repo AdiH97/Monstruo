@@ -1,6 +1,7 @@
 package monstruo;
 
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -37,5 +38,14 @@ public class Atlas {
 
 	public int getSubalto() {
 		return subalto;
+	}
+	
+	public Image getSubImagen (int indice) {
+		int sx1 = (indice % columnas) * subancho;
+		int sy1 = (indice / columnas) * subalto;
+		int sx2 = subancho;
+		int sy2 = subalto;
+		
+		return imagen.getSubimage(sx1, sy1, sx2, sy2);
 	}
 }
