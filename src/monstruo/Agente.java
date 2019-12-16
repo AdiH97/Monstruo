@@ -91,7 +91,7 @@ public class Agente implements Ciclico {
 		STARTY = y;
 		X = x;
 		Y = y;
-		sinConsumir = 1;
+		sinConsumir = 0;
 		bombas_restantes = MAX_BOMBAS;
 		r = new Random();
 		ciclos_restantes = r.nextInt(MAX_CICLOS) + MIN_CICLOS;
@@ -461,10 +461,11 @@ public class Agente implements Ciclico {
 
 		int indice = gIndiceTextura + gDireccion + (gPaso ? 1 : 0) + (gPaso && gAlternaPaso ? 1 : 0);
 		gAtlas.pintarTexturaEscala(g, gX, gY, indice, escala);
+
 		if (percepciones.get(Percepciones.GOLPE)) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
-			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accionpp][0],
-					getY() * gAtlas.getSubalto() + offset[accionpp][1], 2, escala);
+			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accion][0],
+					getY() * gAtlas.getSubalto() + offset[accion][1], 2, escala);
 		}
 	}
 
