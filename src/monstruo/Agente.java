@@ -192,7 +192,7 @@ public class Agente implements Ciclico {
 		// Gi,j && At-1 = NORTE => M0,j-1 && M1,j-1 … Mn,j-1
 		if (G && accionp == Acciones.DESPLAZARSE_NORTE) {
 			for (int j = 0; j < ancho; j++) {
-				if (get(j, Y-1, Estado.SIN_CONSUMIR)) {
+				if (get(j, Y - 1, Estado.SIN_CONSUMIR)) {
 					sinConsumir--;
 				}
 				set(j, Y - 1, Estado.MURO);
@@ -373,11 +373,12 @@ public class Agente implements Ciclico {
 			for (int i = 0; i < 4 && accion == Acciones.NINGUNA; i++) {
 				int XX = X + X_OFFSET[i];
 				int YY = Y + Y_OFFSET[i];
-				if (get(XX, YY, Estado.POSIBLE_MONSTRUO) && num_proyectiles > 0) {
+				if (get(XX, YY, Estado.POSIBLE_MONSTRUO) && !get(X, Y, Estado.DISPARADO_NORTE + i) && num_proyectiles > 0) {
 					if (sinConsumir == 0) {
 						accion = 4 + i;
 						num_proyectiles--;
 						set(X, Y, Estado.DISPARADO_NORTE + i);
+						System.out.println("Disparar hacia " + i + " (quedan " + num_proyectiles + " balas)");
 						break;
 					}
 				}

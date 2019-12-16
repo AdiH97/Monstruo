@@ -85,7 +85,7 @@ public class Entorno extends JPanel implements Ciclico {
 
 		bombas = new ArrayList<>();
 
-		numAgentes = 4;
+		numAgentes = 1;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
