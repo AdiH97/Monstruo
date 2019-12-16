@@ -3,7 +3,6 @@ package monstruo;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -33,14 +32,14 @@ public class Entorno extends JPanel implements Ciclico {
 	public static final int BASE_ROJO = 9;
 	public static final int BASE_VERDE = 10;
 	public static final int BASE_AZUL = 11;
-	private final int ancho;
-	private final int alto;
-	private final int[][] mapa;
+	private int ancho;
+	private int alto;
+	private int[][] mapa;
 
 	// agentes //
 	private static final int MAX_AGENTES = 4;
-	private final int numAgentes;
-	private final Agente[] agentes;
+	private int numAgentes;
+	private Agente[] agentes;
 
 	// contadores //
 	private int numTesoros;
@@ -427,6 +426,10 @@ public class Entorno extends JPanel implements Ciclico {
 	public int getNumAgentes() {
 		return numAgentes;
 	}
+	
+	public void setNumAgentes(int numAgentes) {
+		this.numAgentes = numAgentes;
+	}
 
 	public void addElemento(int x, int y, int elemento) {
 		if (mapa[x][y] == NADA) {
@@ -470,6 +473,47 @@ public class Entorno extends JPanel implements Ciclico {
 
 	public int getCiclos() {
 		return ciclos;
+	}
+	
+	public void reset () {
+		ciclos = 0;
+		gFactorEscalado = 1;
+		
+		mapa = new int[ancho][alto];
+
+		final int muroNorte = 0;
+		final int muroSur = alto - 1;
+		final int muroOeste = 0;
+		final int muroEste = ancho - 1;
+		int[] baseX = {muroOeste + 1, muroEste - 1, muroEste - 1, muroOeste + 1};
+		int[] baseY = {muroNorte + 1, muroNorte + 1, muroSur - 1, muroSur - 1};
+
+		for (int i = 0; i < ancho; i++) {
+			mapa[i][muroNorte] = mapa[i][muroSur] = MURO;
+		}
+
+		for (int i = 0; i < alto; i++) {
+			mapa[muroOeste][i] = mapa[muroEste][i] = MURO;
+		}
+
+		for (int i = 1; i < ancho - 1; i++) {
+			for (int j = 1; j < alto - 1; j++) {
+				mapa[i][j] = NADA;
+			}
+		}
+
+		agentes = new Agente[MAX_AGENTES];
+
+		for (int i = 0; i < agentes.length; i++) {
+			agentes[i] = new Agente(gAtlas, G_INDICES_AGENTES[i], ancho, alto, baseX[i], baseY[i]);
+			mapa[baseX[i]][baseY[i]] = BASE_AMARILLO + i;
+		}
+
+		bombas = new ArrayList<>();
+
+		numAgentes = 1;
+		numMonstruos = 0;
+		numTesoros = 0;
 	}
 
 }

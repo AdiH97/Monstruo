@@ -9,17 +9,29 @@ import javax.swing.JPanel;
 
 public class PanelDebug extends JPanel {
 
+	private static final int PADDING = 10;
+	private static final float FONT_SIZE = 16.0f;
+	private static final int IMG_SIZE = 32;
+	private static final int IMG_STARTX = 128;
+	private static final int IMG_STARTY = 25;
 	private static final int SIZE = 10;
-	private final Agente agente;
+	
+	private static final int[] OFFSET_BOMBA = {17, 18, 55, 56};
+	
+	private Agente agente;
+	private final Atlas atlas;
+	private int indice;
 
-	public PanelDebug(Agente agente) {
+	public PanelDebug(Agente agente, Atlas atlas, int indice) {
 		this.agente = agente;
+		this.atlas = atlas;
+		this.indice = indice;
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
-		int x = 0;
+		int x = PADDING;
 		int y = 0;
 
 		g2.setFont(g2.getFont().deriveFont(10.0f));
@@ -35,7 +47,7 @@ public class PanelDebug extends JPanel {
 			x += SIZE + 1;
 		}
 
-		x = 0;
+		x = PADDING;
 		y = 24;
 		g.setColor(Color.MAGENTA);
 		g.fillRect(x, y, this.getPreferredSize().width - SIZE, this.getPreferredSize().height - SIZE * 4);
@@ -84,6 +96,24 @@ public class PanelDebug extends JPanel {
 			y = 24;
 			x += SIZE + 2;
 		}
+		
+		// Pintar texturas
+		g2.drawImage(atlas.getSubImagen(OFFSET_BOMBA[indice]), IMG_STARTX, IMG_STARTY + PADDING, IMG_SIZE, IMG_SIZE, null);
+		g2.drawImage(atlas.getSubImagen(21), IMG_STARTX, IMG_STARTY + IMG_SIZE + PADDING, IMG_SIZE, IMG_SIZE, null);
+		g2.drawImage(atlas.getSubImagen(57), IMG_STARTX, IMG_STARTY + (IMG_SIZE * 2) + PADDING, IMG_SIZE, IMG_SIZE, null);
+		
+		g.setColor(Color.BLACK);
+		g2.setFont(g2.getFont().deriveFont(FONT_SIZE));
+		g2.drawString(agente.getNumBombasRestantes()+ "", IMG_STARTX + IMG_SIZE + PADDING, IMG_STARTY + PADDING + g2.getFontMetrics().getHeight());
+		g2.drawString("(" + agente.getCiclosRestantes()+ " ciclos restantes)", IMG_STARTX + IMG_SIZE + PADDING + 20, IMG_STARTY + PADDING + g2.getFontMetrics().getHeight());
+		g2.drawString(agente.getNumProyectiles()+ "", IMG_STARTX + IMG_SIZE + PADDING, IMG_STARTY + IMG_SIZE + PADDING + g2.getFontMetrics().getHeight());
+		g2.drawString(agente.getNumTesorosEncontrados()+ "", IMG_STARTX + IMG_SIZE + PADDING, IMG_STARTY + (IMG_SIZE * 2) + PADDING + g2.getFontMetrics().getHeight());
+		
+	}
+	
+	public void setAgente (Agente agente, int indice) {
+		this.agente = agente;
+		this.indice = indice;
 	}
 
 	@Override

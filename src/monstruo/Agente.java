@@ -548,4 +548,16 @@ public class Agente implements Ciclico {
 	public int getSinConsumir() {
 		return sinConsumir;
 	}
+	
+	public int getNumProyectiles() {
+		return num_proyectiles;
+	}
+	
+	public int getNumBombasRestantes() {
+		return bombas_restantes;
+	}
+	
+	public int getCiclosRestantes() {
+		return ciclos_restantes;
+	}
 }
