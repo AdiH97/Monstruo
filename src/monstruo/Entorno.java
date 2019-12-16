@@ -3,7 +3,6 @@ package monstruo;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -15,7 +14,7 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int[] Y_OFFSET = {-1, 0, 1, 0};
 
 	private static final int DURACION_BOMBAS = 69; // 9 ciclos (-1 del agente)
-	private ArrayList<int[]> bombas;
+	private final ArrayList<int[]> bombas;
 	private int ciclos;
 
 	// gráficos //
@@ -85,7 +84,7 @@ public class Entorno extends JPanel implements Ciclico {
 
 		bombas = new ArrayList<>();
 
-		numAgentes = 1;
+		numAgentes = 4;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -136,10 +135,10 @@ public class Entorno extends JPanel implements Ciclico {
 				}
 				if (num_tesoros > 0) {
 					JOptionPane.showMessageDialog(null,
-							"Número de tesoros recogidos: " + num_tesoros,
-							"Ganador",
-							JOptionPane.DEFAULT_OPTION,
-							new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[agente])));
+												  "Número de tesoros recogidos: " + num_tesoros,
+												  "Ganador",
+												  JOptionPane.DEFAULT_OPTION,
+												  new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[agente])));
 					System.exit(0);
 				}
 			}
@@ -180,7 +179,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-							&& mapa[balaX][balaY] != MONSTRUO) {
+						   && mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
@@ -232,10 +231,6 @@ public class Entorno extends JPanel implements Ciclico {
 						a.gX -= 1;
 						break;
 				}
-			}
-
-			if (a.getAccionp() <= 4 && a.getAccionp() < 8) {
-
 			}
 		}
 		ciclos++;
