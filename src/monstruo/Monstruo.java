@@ -132,7 +132,7 @@ public class Monstruo {
 			 */
 			atlas = new Atlas("./res/atlas.png", 32, 32);
 			jpEntorno = new Entorno(atlas, tam, tam);
-			jpEntorno.setNumAgentes(num_agentes);
+			jpEntorno.setNumAgentes(1);
 			pd = new PanelDebug(jpEntorno.getAgentes()[0], atlas, 0);
 
 			/**

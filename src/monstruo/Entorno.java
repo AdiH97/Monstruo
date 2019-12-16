@@ -84,7 +84,7 @@ public class Entorno extends JPanel implements Ciclico {
 
 		bombas = new ArrayList<>();
 
-		numAgentes = 4;
+		numAgentes = 1;
 		numMonstruos = 0;
 		numTesoros = 0;
 	}
@@ -175,7 +175,7 @@ public class Entorno extends JPanel implements Ciclico {
 				if (accionp == Acciones.RECOGER_TESORO) {
 					set(x, y, NADA);
 				} // processar disparos
-				else if (accionp >= 4 && accionp < 7) {
+				else if (accionp >= 4 && accionp < 8) {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
