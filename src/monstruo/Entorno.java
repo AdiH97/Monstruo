@@ -134,12 +134,14 @@ public class Entorno extends JPanel implements Ciclico {
 						num_tesoros = a.getNumTesorosEncontrados();
 					}
 				}
-				JOptionPane.showMessageDialog(null,
-						"Número de tesoros recogidos: " + num_tesoros,
-						"Ganador",
-						JOptionPane.DEFAULT_OPTION,
-						new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[agente])));
-				System.exit(0);
+				if (num_tesoros > 0) {
+					JOptionPane.showMessageDialog(null,
+							"Número de tesoros recogidos: " + num_tesoros,
+							"Ganador",
+							JOptionPane.DEFAULT_OPTION,
+							new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[agente])));
+					System.exit(0);
+				}
 			}
 		}
 	}
@@ -178,7 +180,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-						   && mapa[balaX][balaY] != MONSTRUO) {
+							&& mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
