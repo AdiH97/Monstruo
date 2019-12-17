@@ -542,8 +542,16 @@ public class Agente implements Ciclico {
 		return STARTY;
 	}
 
-	public void setVerPercepciones(boolean b) {
-		verPercepciones = b;
+	public boolean getVerPercepciones() {
+		return verPercepciones;
+	}
+
+	public void clearPercepciones() {
+		verPercepciones = false;
+	}
+
+	public void toggleVerPercepciones() {
+		verPercepciones = !verPercepciones;
 	}
 
 	public void setNumProyectiles(int proyectiles) {
@@ -557,15 +565,15 @@ public class Agente implements Ciclico {
 	public int getSinConsumir() {
 		return sinConsumir;
 	}
-	
+
 	public int getNumProyectiles() {
 		return num_proyectiles;
 	}
-	
+
 	public int getNumBombasRestantes() {
 		return bombas_restantes;
 	}
-	
+
 	public int getCiclosRestantes() {
 		return ciclos_restantes;
 	}

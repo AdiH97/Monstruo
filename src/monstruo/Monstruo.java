@@ -28,12 +28,13 @@ import javax.swing.event.ChangeEvent;
 public class Monstruo {
 
 	private static final String TITLE = "Monstruo",
-			STOP = "Parar robot",
-			START = "Iniciar robot",
-			VIEW_PERC = "Ver percepciones",
-			HIDE_PERC = "Ocultar percepciones",
-			STEP = "Siguiente paso",
-			RESET = "Resetear";
+	 STOP = "Parar",
+	 START = "Iniciar",
+	 VIEW_PERC = "Ver percepciones",
+	 HIDE_PERC = "Ocultar percepciones",
+	 VIEWHIDE_PERC = "Ver/Ocultar percepciones",
+	 STEP = "Siguiente paso",
+	 RESET = "Resetear";
 
 	// Separación entre los paneles de la ventana
 	private static final int PADDING = 25;
@@ -94,20 +95,20 @@ public class Monstruo {
 			JPanel jpInfo = new JPanel();
 			// Cambiar panel de debug del agente
 			JComboBox jcAgente = new JComboBox();
-			
+
 			// Crear panel de herramientas
 			JPanel jpTools = new JPanel();
 			JButton jbMoving = new JButton(START),
-					jbPercep = new JButton(VIEW_PERC),
-					jbStep = new JButton(STEP),
-					jbReset = new JButton(RESET),
-					// Botones con iconos
-					jbAddChest = new JButton("Añadir tesoro", icon_addChest),
-					jbRemoveChest = new JButton("Eliminar tesoro", icon_removeChest),
-					jbAddBlob = new JButton("Añadir monstruo", icon_addBlob),
-					jbRemoveBlob = new JButton("Eliminar monstruo", icon_removeBlob),
-					jbAddEmpty = new JButton("Añadir precipicio", icon_addEmpty),
-					jbRemoveEmpty = new JButton("Eliminar precipicio", icon_removeEmpty);
+			 jbPercep = new JButton(VIEW_PERC),
+			 jbStep = new JButton(STEP),
+			 jbReset = new JButton(RESET),
+			 // Botones con iconos
+			 jbAddChest = new JButton("Añadir tesoro", icon_addChest),
+			 jbRemoveChest = new JButton("Eliminar tesoro", icon_removeChest),
+			 jbAddBlob = new JButton("Añadir monstruo", icon_addBlob),
+			 jbRemoveBlob = new JButton("Eliminar monstruo", icon_removeBlob),
+			 jbAddEmpty = new JButton("Añadir precipicio", icon_addEmpty),
+			 jbRemoveEmpty = new JButton("Eliminar precipicio", icon_removeEmpty);
 			// Añadir botones al array
 			botones.add(jbAddChest);
 			botones.add(jbRemoveChest);
@@ -338,7 +339,7 @@ public class Monstruo {
 				} else {
 					jbPercep.setText(VIEW_PERC);
 				}
-				jpEntorno.verPercepciones(viewPercep);
+				jpEntorno.togglePercepciones(jcAgente.getSelectedIndex());
 			});
 
 			// Avanzar un ciclo
@@ -365,9 +366,16 @@ public class Monstruo {
 					btn.setEnabled(true);
 				}
 			});
-			
+
 			// Cambiar panel de debug según agente seleccionado
-			jcAgente.addActionListener((ActionEvent ae) ->{
+			jcAgente.addActionListener((ActionEvent ae) -> {
+				for (int i = 0; i < 4; i++) {
+					jpEntorno.clearPercepciones(i);
+				}
+				jpEntorno.clearPercepciones(jcAgente.getSelectedIndex());
+				if (viewPercep) {
+					jpEntorno.togglePercepciones(jcAgente.getSelectedIndex());
+				}
 				pd.setAgente(jpEntorno.getAgentes()[jcAgente.getSelectedIndex()], jcAgente.getSelectedIndex());
 			});
 

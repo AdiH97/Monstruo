@@ -117,7 +117,7 @@ public class Entorno extends JPanel implements Ciclico {
 		if (numTesoros != 0) {
 			// Lista de agentes
 			int[] tesoros_agentes = new int[4];
-			
+
 			// Comprobar que todos estan en base y han terminado de explorar el mapa
 			boolean todos_terminado = true;
 			for (int i = 0; i < numAgentes; i++) {
@@ -127,7 +127,7 @@ public class Entorno extends JPanel implements Ciclico {
 				int sx = a.getStartX();
 				int sy = a.getStartY();
 				int sc = a.getSinConsumir();
-				if (!(x == sx && y == sy && sc == 0)){
+				if (!(x == sx && y == sy && sc == 0)) {
 					todos_terminado = false;
 				} else {
 					tesoros_agentes[i] = a.getNumTesorosEncontrados();
@@ -143,10 +143,10 @@ public class Entorno extends JPanel implements Ciclico {
 					for (int i = 0; i < numAgentes; i++) {
 						if (tesoros_agentes[i] == max_num_tesoros) {
 							JOptionPane.showMessageDialog(null,
-									"Número de tesoros recogidos: " + max_num_tesoros,
-									"Ganador",
-									JOptionPane.DEFAULT_OPTION,
-									new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[i]).getScaledInstance(64, 64, Image.SCALE_FAST)));
+														  "Número de tesoros recogidos: " + max_num_tesoros,
+														  "Ganador",
+														  JOptionPane.DEFAULT_OPTION,
+														  new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[i]).getScaledInstance(64, 64, Image.SCALE_FAST)));
 						}
 					}
 					// Fin del programa
@@ -190,7 +190,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-							&& mapa[balaX][balaY] != MONSTRUO) {
+						   && mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
@@ -242,7 +242,7 @@ public class Entorno extends JPanel implements Ciclico {
 				}
 			}
 		}
-		
+
 		if (ciclos % 32 == 0) {
 			ganador();
 		}
@@ -473,11 +473,17 @@ public class Entorno extends JPanel implements Ciclico {
 			}
 		}
 	}
+	
+	public boolean getVerPercepciones(int agente) {
+		return agentes[agente].getVerPercepciones();
+	}
 
-	public void verPercepciones(boolean b) {
-		for (Agente a : agentes) {
-			a.setVerPercepciones(b);
-		}
+	public void clearPercepciones(int agente) {
+		agentes[agente].clearPercepciones();
+	}
+
+	public void togglePercepciones(int agente) {
+		agentes[agente].toggleVerPercepciones();
 	}
 
 	public int getCiclos() {
