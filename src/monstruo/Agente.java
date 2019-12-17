@@ -474,7 +474,7 @@ public class Agente implements Ciclico {
 		int indice = gIndiceTextura + gDireccion + (!quieto && gPaso ? 1 : 0) + (!quieto && gPaso && gAlternaPaso ? 1 : 0);
 		gAtlas.pintarTexturaEscala(g, gX, gY, indice, escala);
 
-		if (percepciones.get(Percepciones.GOLPE)) {
+		if (percepciones.get(Percepciones.GOLPE) && accion >= 0 && accion < 4) {
 			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accion][0],
 									   getY() * gAtlas.getSubalto() + offset[accion][1], 2, escala);
