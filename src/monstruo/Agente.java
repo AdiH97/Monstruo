@@ -121,12 +121,22 @@ public class Agente implements Ciclico {
 		boolean R = p.get(Percepciones.RESPLANDOR);
 		boolean G = p.get(Percepciones.GOLPE);
 		boolean S = p.get(Percepciones.GEMIDO);
+		accion = Acciones.NINGUNA;
 
 		if (!get(X, Y, Estado.VISITADA)) {
 			sinConsumir--;
 		}
 		set(X, Y, Estado.VISITADA);
-		accion = Acciones.NINGUNA;
+
+		// ¬V* => sinConsumir++
+		for (int i = 0; i < 4; i++) {
+			int XX = X + X_OFFSET[i];
+			int YY = Y + Y_OFFSET[i];
+			if (get(XX, YY, Estado.OK) && !get(XX, YY, Estado.VISITADA) && !get(XX, YY, Estado.SIN_CONSUMIR)) {
+				sinConsumir++;
+				set(XX, YY, Estado.SIN_CONSUMIR);
+			}
+		}
 
 		// *************** //
 		// PARTE DEDUCTIVA //
@@ -321,16 +331,6 @@ public class Agente implements Ciclico {
 				if (!get(XX, YY, Estado.MURO)) {
 					set(XX, YY, Estado.OK_PRECIPICIO);
 				}
-			}
-		}
-
-		// ¬V* => sinConsumir++
-		for (int i = 0; i < 4; i++) {
-			int XX = X + X_OFFSET[i];
-			int YY = Y + Y_OFFSET[i];
-			if (get(XX, YY, Estado.OK) && !get(XX, YY, Estado.VISITADA) && !get(XX, YY, Estado.SIN_CONSUMIR)) {
-				sinConsumir++;
-				set(XX, YY, Estado.SIN_CONSUMIR);
 			}
 		}
 
