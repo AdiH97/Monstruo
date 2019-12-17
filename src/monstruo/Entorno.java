@@ -5,7 +5,6 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -16,7 +15,7 @@ public class Entorno extends JPanel implements Ciclico {
 	private static final int[] X_OFFSET = {0, 1, 0, -1};
 	private static final int[] Y_OFFSET = {-1, 0, 1, 0};
 
-	private static final int DURACION_BOMBAS = 69; // 9 ciclos (-1 del agente)
+	private static final int DURACION_BOMBAS = 20; //
 	private ArrayList<int[]> bombas;
 	private int ciclos;
 
@@ -127,7 +126,7 @@ public class Entorno extends JPanel implements Ciclico {
 				int sx = a.getStartX();
 				int sy = a.getStartY();
 				int sc = a.getSinConsumir();
-				if (!(x == sx && y == sy && sc == 0)) {
+				if (!(x == sx && y == sy && sc <= 0)) {
 					todos_terminado = false;
 				} else {
 					tesoros_agentes[i] = a.getNumTesorosEncontrados();
@@ -143,10 +142,10 @@ public class Entorno extends JPanel implements Ciclico {
 					for (int i = 0; i < numAgentes; i++) {
 						if (tesoros_agentes[i] == max_num_tesoros) {
 							JOptionPane.showMessageDialog(null,
-														  "Número de tesoros recogidos: " + max_num_tesoros,
-														  "Ganador",
-														  JOptionPane.DEFAULT_OPTION,
-														  new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[i]).getScaledInstance(64, 64, Image.SCALE_FAST)));
+									"Número de tesoros recogidos: " + max_num_tesoros,
+									"Ganador",
+									JOptionPane.DEFAULT_OPTION,
+									new ImageIcon(gAtlas.getSubImagen(G_INDICES_AGENTES[i]).getScaledInstance(64, 64, Image.SCALE_FAST)));
 						}
 					}
 					// Fin del programa
@@ -166,17 +165,6 @@ public class Entorno extends JPanel implements Ciclico {
 			// CÓDIGO ENTORNO //
 			if (ciclos % 32 == 0) {
 
-				for (int j = 0; j < bombas.size(); j++) {
-					bombas.get(j)[2]--;
-
-					if (bombas.get(j)[2] == 0) {
-						int bx = bombas.get(j)[0];
-						int by = bombas.get(j)[1];
-						mapa[bx][by] = NADA;
-						bombas.remove(j);
-					}
-				}
-
 				// posición del agente y última acción del agente //
 				int accionp = a.getAccionp();
 
@@ -190,7 +178,7 @@ public class Entorno extends JPanel implements Ciclico {
 					int balaX = x;
 					int balaY = y;
 					while (balaX > 0 && balaX < ancho - 1 && balaY > 0 && balaY < alto - 1
-						   && mapa[balaX][balaY] != MONSTRUO) {
+							&& mapa[balaX][balaY] != MONSTRUO) {
 						balaX += X_OFFSET[accionp % 4];
 						balaY += Y_OFFSET[accionp % 4];
 						if (mapa[balaX][balaY] == MONSTRUO) {
@@ -244,6 +232,18 @@ public class Entorno extends JPanel implements Ciclico {
 		}
 
 		if (ciclos % 32 == 0) {
+			// Bombas de hedor
+			for (int j = 0; j < bombas.size(); j++) {
+				bombas.get(j)[2]--;
+
+				if (bombas.get(j)[2] == 0) {
+					int bx = bombas.get(j)[0];
+					int by = bombas.get(j)[1];
+					mapa[bx][by] = NADA;
+					bombas.remove(j);
+				}
+			}
+			// Ganadores
 			ganador();
 		}
 		ciclos++;
@@ -473,7 +473,7 @@ public class Entorno extends JPanel implements Ciclico {
 			}
 		}
 	}
-	
+
 	public boolean getVerPercepciones(int agente) {
 		return agentes[agente].getVerPercepciones();
 	}
