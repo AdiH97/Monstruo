@@ -14,7 +14,7 @@ public class PanelDebug extends JPanel {
 	private static final int IMG_SIZE = 32;
 	private static final int IMG_STARTX = 128;
 	private static final int IMG_STARTY = 25;
-	private static final int SIZE = 10;
+	private final int size;
 	
 	private static final int[] OFFSET_BOMBA = {17, 18, 55, 56};
 	
@@ -26,6 +26,7 @@ public class PanelDebug extends JPanel {
 		this.agente = agente;
 		this.atlas = atlas;
 		this.indice = indice;
+		size = 80 / (agente.getMapa().length + 1);
 	}
 
 	@Override
@@ -37,20 +38,20 @@ public class PanelDebug extends JPanel {
 		g2.setFont(g2.getFont().deriveFont(10.0f));
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 5; i++) {
 			y = 0;
 			g2.setColor(Color.BLACK);
-			g2.drawString("" + "HBRG".charAt(i), x, y + g2.getFontMetrics().getHeight());
-			y = 12;
-			g.setColor(agente.getPercepciones().get(i) ? Color.GREEN : Color.RED);
-			g.fillRect(x, y, SIZE, SIZE);
-			x += SIZE + 1;
+			g2.drawString("" + "HBRGS".charAt(i), x, y + g2.getFontMetrics().getHeight());
+			y = 14;
+			g.setColor((agente.getPercepciones().get(i) ? Color.GREEN : Color.RED));
+			g.fillRect(x, y, 8, 8);
+			x += 8 + 1;
 		}
 
 		x = PADDING;
 		y = 24;
 		g.setColor(Color.MAGENTA);
-		g.fillRect(x, y, this.getPreferredSize().width - SIZE, this.getPreferredSize().height - SIZE * 4);
+		g.fillRect(x, y, 112, 112);
 		g.setColor(Color.BLACK);
 		g2.setFont(g2.getFont().deriveFont(9.0f));
 		for (int i = 0; i < agente.getMapa().length; i++) {
@@ -58,43 +59,41 @@ public class PanelDebug extends JPanel {
 				if (agente.getMapa()[i][j] == null) {
 
 					g.setColor(Color.WHITE);
-					g.fillRect(x, y, SIZE, SIZE);
+					g.fillRect(x, y, size, size);
 					g.setColor(Color.BLACK);
-					g.drawRect(x, y, SIZE - 1, SIZE - 1);
+					g.drawRect(x, y, size - 1, size - 1);
 					g.drawString("?", x + 3, y + g.getFontMetrics().getAscent() - 1);
 				} else {
-					
-
 					if (agente.getMapa()[i][j].get(Estado.MURO)) {
 						g.setColor(Color.BLACK);
-						g.fillRect(x, y, SIZE, SIZE);
-					} else if (agente.getMapa()[i][j].get(Estado.POSIBLE_MONSTRUO) && agente.getMapa()[i][j].get(Estado.POSIBLE_PRECIPICIO)) {
+						g.fillRect(x, y, size, size);
+					} else if ((agente.getMapa()[i][j].get(Estado.POSIBLE_MONSTRUO) && agente.getMapa()[i][j].get(Estado.POSIBLE_PRECIPICIO)) || (agente.getMapa()[i][j].get(Estado.MONSTRUO) && agente.getMapa()[i][j].get(Estado.PRECIPICIO))) {
 						g.setColor(Color.ORANGE);
-						int[] lotrix = {x, x + SIZE, x};
-						int[] lotriy = {y, y + SIZE, y + SIZE};
-						int[] hitrix = {x, x + SIZE, x + SIZE};
-						int[] hitriy = {y, y, y + SIZE};
+						int[] lotrix = {x, x + size, x};
+						int[] lotriy = {y, y + size, y + size};
+						int[] hitrix = {x, x + size, x + size};
+						int[] hitriy = {y, y, y + size};
 						g.setColor(Color.ORANGE);
 						g.fillPolygon(lotrix, lotriy, 3);
 						g.setColor(Color.BLUE);
 						g.fillPolygon(hitrix, hitriy, 3);
-					} else if (agente.getMapa()[i][j].get(Estado.POSIBLE_MONSTRUO)) {
+					} else if (agente.getMapa()[i][j].get(Estado.POSIBLE_MONSTRUO) || agente.getMapa()[i][j].get(Estado.MONSTRUO)) {
 						g.setColor(Color.ORANGE);
-						g.fillRect(x, y, SIZE, SIZE);
-					} else if (agente.getMapa()[i][j].get(Estado.POSIBLE_PRECIPICIO)) {
+						g.fillRect(x, y, size, size);
+					} else if (agente.getMapa()[i][j].get(Estado.POSIBLE_PRECIPICIO) || agente.getMapa()[i][j].get(Estado.PRECIPICIO)) {
 						g.setColor(Color.BLUE);
-						g.fillRect(x, y, SIZE, SIZE);
+						g.fillRect(x, y, size, size);
 					}
 					if (agente.getMapa()[i][j].get(Estado.SIN_CONSUMIR)) {
 						g.setColor(Color.WHITE);
-						g.drawRect(x, y, SIZE - 1, SIZE - 1);
+						g.fillRect(x, y, size, size);
 					}
 				}
-				y += SIZE + 2;
+				y += size + 2;
 
 			}
 			y = 24;
-			x += SIZE + 2;
+			x += size + 2;
 		}
 		
 		// Pintar texturas
