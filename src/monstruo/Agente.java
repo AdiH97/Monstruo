@@ -479,10 +479,12 @@ public class Agente implements Ciclico {
 			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accion][0],
 									   getY() * gAtlas.getSubalto() + offset[accion][1], 2, escala);
 		}
-		if (accion >= 4 && accion < 7) {
-			int[][] offset = {{0, -16}, {16, 0}, {0, 16}, {-16, 0}};
-			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accion % 4][0],
-									   getY() * gAtlas.getSubalto() + offset[accion % 4][1], 2 + 19, escala);
+		if (accion >= 4 && accion < 8) {
+			int[][] offset = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+			int cc = (ciclos % 32) * 4;
+			cc = cc > 32 ? 32 : cc;
+			gAtlas.pintarTexturaEscala(g, getX() * gAtlas.getSubancho() + offset[accion % 4][0] * cc,
+									   getY() * gAtlas.getSubalto() + offset[accion % 4][1] * cc, 2 + 19, escala);
 		}
 	}
 
