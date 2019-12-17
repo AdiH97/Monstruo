@@ -396,11 +396,13 @@ public class Agente implements Ciclico {
 	}
 
 	private void tirarBomba() {
-		if (ciclos_restantes == 0) {
-			ciclos_restantes = r.nextInt(MAX_CICLOS) + MIN_CICLOS;
-		} else {
-			if (ciclos % 32 == 0) {
-				ciclos_restantes--;
+		if (getX() != STARTX && getY() != STARTY) {
+			if (ciclos_restantes == 0) {
+				ciclos_restantes = r.nextInt(MAX_CICLOS) + MIN_CICLOS;
+			} else {
+				if (ciclos % 32 == 0) {
+					ciclos_restantes--;
+				}
 			}
 		}
 	}
