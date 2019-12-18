@@ -1,0 +1,55 @@
+El entorno es la base inicial del conocimiento del agente, es de donde el agente recibe las percepciones a partir de las cuales puede formar su vector de características. En este caso en concreto, nuestro entorno va a ser dinámico ya que los diferentes elementos del mismo puede ir cambiando: por ejemplo, el agente puede matar un monstruo y puede poner bombas de hedor para confundir a los otros agentes, lo cual puede hacer que momentáneamente cambie el entorno de otro agente.
+
+El entorno se compone de un mapa de elementos (\emph{Monstruo}, \emph{Precipicio}, \emph{Tesoro}, \emph{Muro} y \emph{Hedor}), un número de agentes, monstruos y tesoros (determinado por el usuario). Éstos elementos los separaremos en dos tipos: Elementos \textbf{estáticos} y elementos \textbf{dinámicos}.
+\begin{itemize}
+    \item Los elementos \textbf{estáticos} serán los elementos que permanezcan inalterables en el entorno durante la duración del programa. En nuestro caso serán:
+    \begin{enumerate}
+        \item Paredes.
+        \item Precipicios.
+    \end{enumerate}
+    \item Los elementos \textbf{dinámicos} serán los elementos que podrán cambiar de estado y/o posición durante la duración de la ejecución del programa. Serán:
+    \begin{enumerate}
+        \item Monstruos (y los hedores que produce).
+        \item Las bombas de hedor.
+        \item Los tesoros (y su resplandor).
+    \end{enumerate}{}
+\end{itemize}{}
+
+En esta práctica, nuestro agente se supone que es ciego: esto es, que no puede ver lo que tiene alrededor de él, simulando que está en una cueva oscura y no puede ver lo que hay cerca suya. Por tanto, para que el agente pueda inferir conocimiento, el entorno tendrá que enviarle percepciones. Estas percepciones serán distintas dependiendo de los elementos que haya en el entorno en un momento en concreto. 
+Las percepciones que puede enviar el entorno al agente son las siguientes:
+\begin{enumerate}
+    \item Cuando, en una casilla en concreto, haya un monstruo, éste desprende un \textbf{hedor} que el agente podrá percibir si está en una casilla colindante a la posición del monstruo. \footnote{Una casilla colindante a otra es una casilla que está justo a su lado, a cualquiera de los lados menos en casillas diagonales a la misma.}
+    \item Cuando, en una casilla en concreto, haya un precipicio, el agente percibirá una \textbf{brisa} que, de la misma manera que la percepción anterior, el agente percibirá cuando esté en una casilla colindante al precipicio.
+    \item Cuando el agente esté situado en la misma casilla donde se encuentre el tesoro, éste emitirá un \textbf{resplandor} que el agente percibirá para poder coger el tesoro. Por cuestiones de completitud, tendremos que forzar que el tesoro no se encuentre en la misma casilla que un precipicio ni un monstruo, ya que, si no, para el agente sería imposible llegar a encontrar el tesoro nunca.
+    \item Como extensión de nuestra práctica, cada agente podrá tirar bombas fétidas por el entorno con tal de confundir a los otros agentes y poder conseguir la mayor cantidad de tesoros posibles. Esta bomba fétida emitirá, de la misma manera que el monstruo, un \textbf{hedor}, que permanecerá durante un tiempo determinado y luego se irá, que el agente percibirá cuando se encuentre en la misma casilla en la que se sitúa la bomba fétida.
+    \item Cuando un agente tira una flecha a un monstruo y lo mata, éste emite un \textbf{gemido} que es percibido por el agente.
+\end{enumerate}{}
+
+Para enviar las percepciones, el entorno sigue el siguiente proceso por cada agente:
+
+\begin{enumerate}
+    \item Obtiene la posición del agente.
+    \item Obtiene la acción anterior del agente (la que ha realizado en el ciclo anterior).
+    \item Si el agente quiere recoger un tesoro que ha encontrado, comprobar que sea un tesoro, quitarlo del mapa e incrementar el número de tesoros encontrados en el mapa.
+    \item Preparar las percepciones que se enviarán al agente:
+    \begin{enumerate}
+        \item Si el agente ha disparado, comprobar si impacta con un \emph{Monstruo}. En caso de que impacte, eliminar el monstruo del mapa y preparar la percepción de \emph{Gemido} (poner su valor a \emph{Verdadero}).
+        \item Si se encuentra en la casilla adyacente a un \emph{Monstruo} o en una casilla con \emph{Hedor falso}, preparar la percepción de \emph{Hedor}.
+        \item Si se encuentra en la casilla adyacente a un \emph{Precipicio} preparar la percepción de \emph{Brisa}.
+        \item Si se encuentra en una casilla con un \emph{Tesoro}, preparar la percepción de \emph{Resplandor}.
+    \end{enumerate}
+    
+    \item Enviar las percepciones al agente.
+    \item Obtener la acción del agente.
+    \item Comprobar si el agente se va a golpear con un \emph{Muro}. En caso afirmativo, preparar la percepción para el siguiente ciclo.
+    \item En el caso de que el agente quiera poner una \emph{bomba de hedor}, añadirla al \emph{vector de bombas} (este vector contiene la información sobre la posición del mapa, la duración de la bomba y el agente que ha producido esta bomba).
+\end{enumerate}
+
+Finalmente, para cada ciclo que dura el juego, el entorno comprueba los ganadores: 
+
+\begin{itemize}
+    \item Si al agente le quedan cero casillas sin consumir.
+    \item Si al agente ha vuelto a su posición de inicio.
+\end{itemize}
+
+En caso de que se cumplan las dos condiciones para todos los agentes, el entorno imprimirá a todos los que hayan conseguido el máximo número de tesoros (puede haber más de agente, ya que si han recogido el mismo número quedarán empatados).

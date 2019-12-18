@@ -1,0 +1,13 @@
+La práctica consiste en implementar el problema de "la cueva del monstruo". El problema consta de un agente ''ciego'' que tiene que conseguir llegar al tesoro. 
+
+Para poder llegar al tesoro, el agente tiene que conseguir sortear los diferentes obstáculos que habrá a lo largo del mapa: monstruos, precipicios y paredes:
+
+\begin{enumerate}
+    \item Los monstruos desprenden un hedor en las casillas colindantes sobre la que se situa. Así el agente, si está cerca, puede llegar a evitar los monstruos.
+    \item Cuando el agente esté en una casilla adyacente de un precipicio, sentirá una brisa. Así, el agente podrá evitarlos. Cuando el agente se choque con una pared, el agente percibirá que se ha dado un golpe. Tenemos que tener en consideración que el agente sabe donde está y hacia donde se mueve, pudiendo así inferir conocimiento.
+    \item El agente, además de evitar los monstruos, si llega a saber en qué posición hay un monstruo seguro, tiene la opción de tirar una flecha hacia la dirección del monstruo para matarlo. Si lo consigue, el monstruo emitirá un gemido que será captado por el agente. Hay que tener en cuenta que el agente solo puede disparar en linea recta, es decir, no puede disparar en diagonal.
+\end{enumerate}{}
+
+Como parte opcional, puede haber más de un agente compitiendo por uno o más tesoros. Para que compitan entre ellos, se ha añadido un elemento competitivo ''bomba de hedor'', que emitirá un hedor para que los otros agentes se puedan confundir y puedan ganar a los otros agentes. El agente que gane será el agente que haya recogido más tesoros.
+
+La práctica consiste en implementar este problema utilizando el lenguaje de programación que nosotros decidamos.
