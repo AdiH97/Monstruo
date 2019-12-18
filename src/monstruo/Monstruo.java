@@ -44,7 +44,7 @@ public class Monstruo {
 	private static final int MAX_TICK = 1080;
 
 	// Tamaño de los iconos
-	private static final int ICON_SIZE = 30;
+	private static final int ICON_SIZE = 60;
 
 	// Valor del slider / espera entre ciclos
 	private int framerate = MIN_TICK;
@@ -173,7 +173,7 @@ public class Monstruo {
 			gbc_tools.gridx = 0;
 			gbc_tools.gridy = 0;
 			gbc_tools.fill = GridBagConstraints.HORIZONTAL;
-			gbc_tools.ipadx = 70; // Anchuro de los elementos
+			gbc_tools.ipadx = 120; // Anchuro de los elementos
 			gbc_tools.ipady = 10; // Altura de los elementos
 			jpTools.add(jbAddChest, gbc_tools);
 			gbc_tools.gridy++;
@@ -195,7 +195,7 @@ public class Monstruo {
 			gbc_db.fill = GridBagConstraints.HORIZONTAL;
 			// El botón de 'Ocultar percepciones' desplaza el panel de entorno y hace que no sea visible cuando no está
 			// en pantalla completa. Esto se debe a que el ipad se suma al tamaño del texto de los botones.
-			gbc_db.ipadx = 30;
+			gbc_db.ipadx = 120;
 			gbc_db.ipady = 10;
 			gbc_db.gridx = 0;
 			gbc_db.gridy = 0;
@@ -221,7 +221,7 @@ public class Monstruo {
 			jpControl.add(jslTicks, gbc_db);
 			gbc_db.gridy++;
 			jpControl.add(jcAgente, gbc_db);
-			gbc_db.gridx = 0;
+			gbc_db.gridx = 1;
 			gbc_db.gridy++;
 			gbc_db.gridheight = 2;
 			gbc_db.gridwidth = 3;
@@ -251,11 +251,14 @@ public class Monstruo {
 			gbc.gridheight = 1;
 			gbc.gridwidth = 1;
 			jfVentana.add(jpControl, gbc);
+			
+			
 			// Establecer las propiedas de la ventana
 			jfVentana.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			jfVentana.pack();
 			jfVentana.setLocationRelativeTo(null);
 			jfVentana.setVisible(true);
+			jfVentana.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
 			/**
 			 * PARTE LÓGICA. *
